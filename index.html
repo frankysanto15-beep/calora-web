@@ -1,0 +1,785 @@
+<title>Calora Termos</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one motif. The termo's capsule silhouette (the Calora mascot's body) runs the page:
+   giant cropped capsule in the hero holding the video, capsule buttons, capsule picture masks, capsule bullets.
+   Single light look on purpose: the brand and its video live on cream. */
+:root {
+  --ground: #f0eadc;
+  --ground-2: #e7dfcc;
+  --ink: #1d3a33;
+  --ink-soft: #3f5a52;
+  --accent: #df6432;
+  --accent-ink: #fff8ef;
+  --accent-text: #b4461b;
+  --peach: #f4d9c6;
+  --sand: #e3d3b5;
+  --green-1: #1d3a33;
+  --green-2: #2c5247;
+  --green-3: #4f7568;
+  --green-4: #86a497;
+  --green-5: #c4d3c8;
+  --wa: #2bc463;
+  --wa-ink: #0f2a1e;
+  --display: "Fraunces", Georgia, "Times New Roman", serif;
+  --body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --margin: clamp(16px, 4.5vw, 64px);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { background: var(--ground); color: var(--ink); font-family: var(--body); font-size: 18px; line-height: 1.55; overflow-x: hidden; }
+.frame { padding-left: max(var(--margin), env(safe-area-inset-left, 0px)); padding-right: max(var(--margin), env(safe-area-inset-right, 0px)); max-width: 1440px; margin: 0 auto; }
+h1, h2, h3 { font-family: var(--display); font-weight: 600; line-height: 1; letter-spacing: -0.025em; margin: 0; text-wrap: balance; }
+h2 { font-size: clamp(36px, 4.4vw, 64px); }
+p { margin: 0; }
+a { color: inherit; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+/* the one button shape: a capsule, like the termo */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 56px; padding: 0 28px; border-radius: 999px; border: 0; font: 700 17px/1 var(--body); text-decoration: none; cursor: pointer; transition: transform 140ms var(--ease-out), background-color 200ms ease; }
+.btn:active { transform: scale(0.97); }
+.btn-wa { background: var(--wa); color: var(--wa-ink); }
+.btn-wa:hover { background: #25b259; }
+.btn-ink { background: var(--ink); color: var(--ground); }
+.btn-ink:hover { background: var(--green-2); }
+.wa-ico { width: 22px; height: 22px; flex: none; }
+
+/* NAV */
+.nav { position: relative; z-index: 3; }
+.nav .frame { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 22px; }
+.mark { display: inline-flex; align-items: center; gap: 8px; font: 600 32px/1 var(--display); letter-spacing: -0.02em; text-decoration: none; }
+.mark svg { width: 22px; height: 28px; }
+.nav ul { display: flex; gap: 28px; list-style: none; margin: 0; padding: 0; font-weight: 600; font-size: 17px; }
+.nav ul a { text-decoration: none; }
+.nav ul a:hover { color: var(--accent); }
+.nav .short { display: none; }
+
+/* HERO */
+.hero { position: relative; overflow: hidden; margin-top: -76px; padding-top: 76px; }
+.hero .frame { position: relative; z-index: 2; min-height: min(860px, 92svh); display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); align-items: center; }
+.hero-copy { grid-column: 1 / span 6; display: grid; gap: 28px; padding-block: 48px 64px; }
+.hero h1 { font-size: clamp(56px, 6.4vw, 100px); font-weight: 700; letter-spacing: -0.035em; line-height: 0.95; }
+.hero-sub { font-size: 20px; max-width: 34ch; }
+.hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; }
+.phone { font: 600 20px/1.2 var(--display); letter-spacing: -0.01em; font-variant-numeric: tabular-nums; user-select: all; }
+.hero-shape { position: absolute; z-index: 1; width: 64vh; height: 120vh; min-width: 420px; min-height: 780px; border-radius: 999px; background: var(--accent); left: 66%; top: 50%; transform: translate(-30%, -46%) rotate(-8deg); }
+.hero-media { grid-column: 8 / span 5; justify-self: center; position: relative; }
+.capsule-video { position: relative; width: min(330px, 26vw); aspect-ratio: 9 / 16; border-radius: 999px; overflow: hidden; border: 7px solid var(--ink); background: var(--ground); max-width: 100%; }
+.capsule-video video, .capsule-video img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.sound { position: absolute; left: 50%; bottom: -22px; transform: translateX(-50%); white-space: nowrap; min-height: 48px; padding: 0 20px; font-size: 15px; }
+.sound:active { transform: translateX(-50%) scale(0.97); }
+.legs { display: flex; justify-content: center; gap: 70px; margin-top: -4px; }
+.legs i { width: 16px; height: 34px; background: var(--ink); border-radius: 0 0 8px 8px; }
+
+/* section rhythm */
+section.s { padding-block: clamp(80px, 9vw, 160px); }
+
+/* SHOWCASE (live thing) */
+.estado .frame { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 24px; align-items: end; }
+.estado-list { grid-column: 1 / span 5; display: grid; gap: 6px; }
+.estado-list h2 { color: var(--ink-soft); margin-bottom: 18px; font-size: clamp(28px, 2.7vw, 40px); }
+.estado-list button { all: unset; cursor: pointer; font: 600 clamp(26px, 2.7vw, 40px)/1.15 var(--display); letter-spacing: -0.02em; color: var(--ink-soft); display: flex; align-items: center; gap: 14px; padding-block: 4px; transition: color 200ms ease, transform 200ms var(--ease-out); }
+.estado-list button::before { content: ""; width: 12px; height: 22px; border-radius: 999px; background: var(--ground-2); flex: none; transition: background-color 200ms ease; }
+.estado-list button:hover { color: var(--ink); }
+.estado-list button[aria-pressed="true"] { color: var(--ink); }
+.estado-list button[aria-pressed="true"]::before { background: var(--accent); }
+.estado-list button:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; border-radius: 6px; }
+.estado-stage { grid-column: 6 / span 7; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 15ch); gap: 28px; align-items: center; }
+.disc { position: relative; aspect-ratio: 5 / 8; max-height: 72vh; justify-self: center; width: 100%; max-width: 400px; display: grid; place-items: center; border-radius: 999px; overflow: hidden; background: var(--c, var(--peach)); transition: background-color 400ms ease; }
+.disc img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 45%; transform: scale(1.25); mix-blend-mode: multiply; transition: opacity 300ms ease; }
+.disc img.out { opacity: 0; }
+.fact { font-size: 17px; font-weight: 500; align-self: end; padding-bottom: 12%; }
+.fact strong { display: block; font: 600 28px/1.1 var(--display); color: var(--accent-text); margin-bottom: 8px; }
+
+/* HOW IT WORKS: accordion of tinted panels */
+.pasos header { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 24px; align-items: end; margin-bottom: 64px; }
+.pasos header h2 { grid-column: 1 / span 5; }
+.pasos header p { grid-column: 7 / span 5; font-size: 20px; }
+.acc { display: flex; height: 520px; list-style: none; margin: 0; padding: 0; overflow: hidden; border-radius: 0; }
+.acc li { flex: 1 1 0; min-width: 0; position: relative; transition: flex-grow 450ms var(--ease-in-out); overflow: hidden; }
+.acc li[data-open="true"] { flex-grow: 5.5; }
+.acc li:nth-child(1) { background: var(--green-1); color: var(--ground); }
+.acc li:nth-child(2) { background: var(--green-2); color: var(--ground); }
+.acc li:nth-child(3) { background: var(--green-3); color: #fff; }
+.acc li:nth-child(4) { background: var(--green-5); color: var(--ink); }
+.acc button { all: unset; cursor: pointer; position: absolute; inset: 0; }
+.acc button:focus-visible { outline: 3px solid var(--accent); outline-offset: -6px; }
+.acc .sliver { position: absolute; left: 22px; bottom: 26px; font: 700 20px/1 var(--body); writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; transition: opacity 200ms ease; }
+.acc .open { position: absolute; inset: 0; padding: 36px 40px; display: grid; grid-template-rows: auto 1fr auto; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 250ms ease; min-width: 460px; }
+.acc li[data-open="true"] .open { opacity: 1; visibility: visible; transition-delay: 180ms; }
+.acc li[data-open="true"] .sliver { opacity: 0; }
+.acc .open h3 { font-size: 40px; max-width: 14ch; }
+.acc .open p { font-size: 17px; max-width: 36ch; }
+.acc .open img { position: absolute; right: -40px; bottom: 0; width: 300px; height: auto; mix-blend-mode: luminosity; opacity: 0.9; border-radius: 999px 999px 0 0; }
+.acc li:nth-child(4) .open img { mix-blend-mode: multiply; }
+
+/* SERVICES: two-column menu with capsule photo bullets */
+.serv h2 { margin-bottom: 8px; }
+.cat { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin: 96px 0 40px; }
+.cat:first-of-type { margin-top: 56px; }
+.cat h3 { font-size: clamp(32px, 3.4vw, 50px); }
+.cat span { font-size: 15px; color: var(--ink-soft); }
+.menu { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 36px 64px; list-style: none; margin: 0; padding: 0; }
+.menu li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 20px; align-items: start; }
+.bullet { width: 52px; height: 84px; border-radius: 999px; overflow: hidden; background: var(--ground-2); border: 3px solid var(--ink); }
+.bullet img { width: 260%; max-width: none; height: auto; margin-left: -80%; margin-top: -6%; mix-blend-mode: multiply; }
+.menu .row { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; font-weight: 700; font-size: 17px; }
+.menu .price { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.menu p { color: var(--ink-soft); font-size: 15px; max-width: 42ch; margin-top: 4px; }
+.menu .note { color: var(--accent-text); font-size: 15px; font-weight: 600; margin-top: 6px; display: block; }
+
+/* COVERAGE band */
+.band { background: var(--ink); color: var(--ground); }
+.band .frame { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 24px; padding-block: clamp(80px, 10vw, 150px); align-items: start; }
+.band-head { grid-column: 1 / span 5; min-width: 0; }
+.band h2 { font-size: clamp(40px, 5vw, 76px); }
+.band .lead { font-size: 20px; margin-top: 20px; color: var(--green-5); max-width: 36ch; }
+.zones { grid-column: 7 / span 6; display: grid; gap: 40px; }
+.zones h3 { font-size: 28px; margin-bottom: 14px; display: flex; align-items: center; gap: 12px; }
+.zones h3::before { content: ""; width: 12px; height: 22px; border-radius: 999px; background: var(--accent); }
+.zones ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.zones li { padding: 8px 16px; border-radius: 999px; background: var(--green-2); font-size: 15px; }
+
+/* FAQ: tabbed index cards */
+.faq .frame > div { max-width: 920px; margin: 0 auto; }
+.faq h2 { margin-bottom: 56px; }
+.cards { list-style: none; margin: 0; padding: 0; }
+.card { --tab: 0px; position: relative; margin-top: -24px; }
+.card:first-child { margin-top: 0; }
+.card:nth-child(3n+1) { --bg: var(--peach); }
+.card:nth-child(3n+2) { --bg: var(--sand); }
+.card:nth-child(3n) { --bg: var(--green-5); }
+.card .shape { background: var(--bg); clip-path: polygon(var(--tab) 0, calc(var(--tab) + 210px) 0, calc(var(--tab) + 230px) 40px, 100% 40px, 100% 100%, 0 100%, 0 40px, var(--tab) 40px); padding: 0 32px 32px; border-radius: 0 0 14px 14px; }
+.card:nth-child(1) { --tab: 0px; } .card:nth-child(2) { --tab: 150px; } .card:nth-child(3) { --tab: 300px; } .card:nth-child(4) { --tab: 450px; } .card:nth-child(5) { --tab: 600px; }
+.card .topic { display: block; height: 40px; line-height: 40px; padding-left: calc(var(--tab) + 24px); font-size: 15px; font-weight: 700; }
+.card button { all: unset; cursor: pointer; display: block; width: 100%; font: 600 20px/1.3 var(--body); padding: 18px 0 8px; }
+.card button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+.card .ans { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 300ms var(--ease-out); }
+.card .ans > div { overflow: hidden; }
+.card .ans p { font-size: 17px; max-width: 54ch; padding-top: 6px; padding-bottom: 12px; }
+.card[data-open="true"] .ans { grid-template-rows: 1fr; }
+
+/* CONTACT: clip-out coupon */
+.coupon { background: var(--green-2); color: var(--ground); border-radius: 14px; display: grid; grid-template-columns: 46fr 54fr; position: relative; overflow: hidden; }
+.coupon::before, .coupon::after { content: ""; position: absolute; left: 46%; width: 28px; height: 28px; margin-left: -14px; border-radius: 50%; background: var(--ground); z-index: 1; }
+.coupon::before { top: -14px; }
+.coupon::after { bottom: -14px; }
+.coupon-l { padding: 48px; display: grid; grid-template-rows: auto 1fr auto; gap: 24px; position: relative; }
+.coupon-l::after { content: ""; position: absolute; right: 0; top: 24px; bottom: 24px; border-right: 5px dotted var(--ground); }
+.coupon h2 { font-size: clamp(32px, 3.4vw, 50px); color: var(--ground); }
+.coupon-l img { width: 150px; height: 240px; object-fit: cover; object-position: 50% 40%; border-radius: 999px; border: 5px solid var(--ink); background: var(--ground); align-self: center; justify-self: start; }
+.coupon-l p { font-size: 17px; max-width: 34ch; }
+.coupon-l .phone { color: var(--ground); font-size: 28px; }
+form { padding: 48px; display: grid; gap: 10px; align-content: center; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+form input, form select { width: 100%; height: 54px; border: 0; border-radius: 10px; background: var(--ground); color: var(--ink); font: 500 17px var(--body); padding: 0 18px; }
+form input::placeholder { color: var(--ink-soft); }
+form input:focus-visible, form select:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+form .btn { width: 100%; margin-top: 6px; min-height: 58px; }
+.form-note { font-size: 15px; min-height: 1.5em; }
+.form-note a { font-weight: 700; color: var(--ground); }
+
+/* FOOTER: the mark built large */
+.foot { background: var(--ground-2); }
+.foot .frame { padding-block: 40px 120px; }
+.blocks { display: flex; align-items: flex-end; gap: 4px; height: 28svh; min-height: 180px; }
+.blocks span { flex: 1 1 0; display: grid; place-items: center; font: 700 clamp(64px, 13vw, 220px)/1 var(--display); letter-spacing: -0.04em; color: var(--ground-2); border-radius: 999px 999px 0 0; }
+.blocks span:nth-child(1) { background: var(--accent); height: 100%; }
+.blocks span:nth-child(2) { background: var(--ink); height: 78%; }
+.blocks span:nth-child(3) { background: var(--green-3); height: 92%; }
+.blocks span:nth-child(4) { background: var(--ink); height: 66%; }
+.blocks span:nth-child(5) { background: var(--accent); height: 84%; }
+.blocks span:nth-child(6) { background: var(--green-2); height: 72%; }
+.foot-cols { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 24px; margin-top: 56px; font-size: 15px; }
+.foot-cols nav { grid-column: 1 / span 8; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.foot-cols nav div { display: grid; gap: 6px; align-content: start; }
+.foot-cols nav a { text-decoration: none; }
+.foot-cols nav a:hover { color: var(--accent); }
+.foot-cols nav b { margin-bottom: 4px; }
+.foot-cols address { grid-column: 9 / span 4; font-style: normal; display: grid; gap: 6px; }
+.foot-last { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-top: 48px; font-size: 15px; color: var(--ink-soft); flex-wrap: wrap; }
+.foot-last .btn { min-height: 48px; font-size: 15px; }
+
+.wa-float { position: fixed; z-index: 20; right: calc(18px + env(safe-area-inset-right, 0px)); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); width: 64px; height: 64px; padding: 0; border: 3px solid var(--ground); }
+.wa-float .wa-ico { width: 30px; height: 30px; }
+
+/* motion: entrances (content stays visible without script) */
+.js .rise { opacity: 0; transform: translateY(24px); transition: opacity 600ms var(--ease-out), transform 700ms var(--ease-out); transition-delay: var(--d, 0ms); }
+.js .rise.in { opacity: 1; transform: none; }
+.shutter { animation: shutter 1100ms var(--ease-out) both; }
+.shutter video, .shutter img { animation: settle 1300ms var(--ease-out) both; }
+@keyframes shutter { from { clip-path: inset(100% 0 0 0 round 999px); } to { clip-path: inset(0 0 0 0 round 999px); } }
+@keyframes settle { from { transform: scale(1.12); } to { transform: none; } }
+.hero-shape { animation: drift 14s ease-in-out infinite alternate; }
+@keyframes drift { from { transform: translate(-30%, -46%) rotate(-8deg); } to { transform: translate(-28%, -48%) rotate(-5deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .js .rise { opacity: 1; transform: none; transition: none; }
+  .shutter, .shutter video, .shutter img, .hero-shape { animation: none; }
+  .acc li, .disc img, .card .ans { transition: none; }
+}
+
+/* tablet */
+@media (max-width: 1000px) {
+  .estado-list { grid-column: 1 / -1; order: 2; }
+  .estado-stage { grid-column: 1 / -1; }
+  .pasos header h2, .pasos header p, .band-head, .zones { grid-column: 1 / -1; }
+  .coupon { grid-template-columns: 1fr; }
+  .coupon::before, .coupon::after { display: none; }
+  .coupon-l::after { left: 24px; right: 24px; top: auto; bottom: 0; border-right: 0; border-bottom: 5px dotted var(--ground); }
+  .foot-cols nav, .foot-cols address { grid-column: 1 / -1; }
+}
+/* hero stacks below 900px */
+@media (max-width: 900px) {
+  .hero .frame { display: block; min-height: 0; }
+  .hero-copy { padding-block: 24px 40px; gap: 20px; }
+  .hero h1 { font-size: clamp(44px, 9vw, 80px); }
+  .hero-shape { left: 50%; top: auto; bottom: -40vw; width: 120vw; height: 140vw; min-width: 0; min-height: 0; transform: translateX(-50%) rotate(-6deg); animation: none; }
+  .hero-media { display: grid; justify-items: center; padding-bottom: 56px; }
+  .capsule-video { width: min(280px, 62vw); }
+}
+/* phone */
+@media (max-width: 720px) {
+  body { font-size: 17px; }
+  .nav ul { display: none; }
+  .nav .short { display: inline-flex; min-height: 44px; padding: 0 18px; font-size: 15px; }
+  .mark { font-size: 28px; }
+  .hero h1 { font-size: 11.5vw; }
+  .hero-sub { font-size: 17px; }
+  .capsule-video { width: min(240px, 62vw); }
+  .band h2 { font-size: 10vw; }
+  .estado-stage { grid-template-columns: 1fr; gap: 8px; }
+  .disc { max-width: min(300px, 76vw); }
+  .estado-list { display: flex; flex-wrap: wrap; gap: 6px 20px; }
+  .estado-list h2 { width: 100%; margin-bottom: 8px; }
+  .estado-list button { font-size: 20px; }
+  .fact { padding-bottom: 0; font-size: 16px; }
+  .acc { flex-direction: column; height: auto; }
+  .acc li { flex: none; min-height: 64px; }
+  .acc li[data-open="true"] { min-height: 0; }
+  .acc .sliver { writing-mode: horizontal-tb; transform: none; left: 20px; bottom: auto; top: 22px; font-size: 18px; }
+  .acc .open { position: relative; min-width: 0; display: none; padding: 24px 20px 28px; gap: 12px; }
+  .acc li[data-open="true"] .open { display: grid; }
+  .acc .open h3 { font-size: 30px; }
+  .acc .open p { font-size: 17px; }
+  .acc .open img { position: static; width: 160px; justify-self: end; margin: -10px -20px -28px 0; }
+  .acc button { position: absolute; inset: 0 0 auto 0; height: 64px; }
+  .acc li[data-open="true"] button { height: 100%; }
+  .menu { grid-template-columns: 1fr; }
+  .cat h3 { font-size: 8.5vw; }
+  .card .shape { padding: 0 20px 22px; clip-path: polygon(var(--tab) 0, calc(var(--tab) + 120px) 0, calc(var(--tab) + 134px) 40px, 100% 40px, 100% 100%, 0 100%, 0 40px, var(--tab) 40px); }
+  .card:nth-child(2) { --tab: 48px; } .card:nth-child(3) { --tab: 96px; } .card:nth-child(4) { --tab: 144px; } .card:nth-child(5) { --tab: 192px; }
+  .card .topic { padding-left: calc(var(--tab) + 12px); font-size: 15px; }
+  
+  .card button { font-size: 19px; }
+  .coupon-l, form { padding: 28px 20px; }
+  .coupon-l img { width: 160px; }
+  .blocks { height: 22svh; min-height: 140px; }
+  .blocks span { font-size: 15vw; }
+  .foot-cols nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* services: compact plans */
+.plans { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0; }
+.plan { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 28px; align-items: center; padding: 32px 36px; min-height: 240px; }
+.plan-muro { background: var(--peach); border-radius: 14px 0 0 14px; }
+.plan-piso { background: var(--sand); border-radius: 0 14px 14px 0; }
+.plan h4 { font: 700 20px/1.2 var(--body); margin: 0; }
+.plan-body { display: grid; gap: 6px; justify-items: start; }
+.plan-price { font: 700 clamp(56px, 6vw, 92px)/0.95 var(--display); letter-spacing: -0.04em; font-variant-numeric: tabular-nums; display: flex; align-items: flex-start; }
+.plan-price .cur { font-size: 0.45em; margin: 0.12em 0.08em 0 0; }
+.plan-btn { margin-top: 10px; min-height: 48px; padding: 0 24px; font-size: 15px; }
+.plan-btn svg { transition: transform 200ms var(--ease-out); }
+.plan-ico { height: 150px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; position: relative; }
+.plan-ico i { display: block; width: 58px; height: 96px; border-radius: 999px; border: 5px solid var(--ink); background: #fbf7ef; position: relative; transition: transform 400ms var(--ease-out); }
+.plan-ico i::after { content: ""; position: absolute; left: 50%; bottom: 18px; width: 22px; height: 9px; margin-left: -11px; border-radius: 3px; background: var(--ink); }
+.plan-muro .plan-ico { justify-content: flex-start; flex-direction: row; align-items: flex-start; gap: 0; }
+.plan-muro .plan-ico .wall { width: 10px; height: 150px; background: var(--ink); border-radius: 2px; margin-right: 6px; }
+.plan-piso .plan-ico .floor { width: 96px; height: 10px; background: var(--ink); border-radius: 2px; margin-top: 4px; }
+.plan-piso .plan-ico i { width: 64px; height: 126px; }
+.plan:hover .plan-ico i { transform: translateY(-4px) rotate(-3deg); }
+.incl { list-style: none; margin: 18px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 15px; font-weight: 600; color: var(--ink); }
+.incl li { display: flex; align-items: center; gap: 8px; }
+.incl li::before { content: ""; width: 8px; height: 14px; border-radius: 999px; background: var(--accent); }
+.inst { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 64px; align-items: start; }
+.inst .menu { grid-template-columns: 1fr; gap: 28px; }
+.advice { background: var(--ink); color: var(--ground); border-radius: 14px; padding: 36px; display: grid; gap: 16px; justify-items: start; }
+.advice-t { font: 600 clamp(28px, 2.6vw, 40px)/1.05 var(--display); letter-spacing: -0.02em; }
+.advice p:not(.advice-t) { font-size: 17px; color: var(--green-5); }
+
+/* coverage radar */
+.radar { grid-column: 7 / span 6; margin: 0; display: grid; gap: 12px; justify-items: center; }
+.radar svg { width: 100%; max-width: 480px; height: auto; overflow: visible; }
+.radar .ring { fill: none; stroke: var(--green-3); stroke-width: 1.5; }
+.radar .r100 { fill: var(--green-2); stroke: var(--accent); stroke-width: 3; stroke-dasharray: 1069; stroke-dashoffset: 0; }
+.radar .pulse { fill: var(--accent); opacity: 0.18; transform-origin: 200px 200px; animation: pulse 3.2s var(--ease-out) infinite; }
+@keyframes pulse { from { transform: scale(0.4); opacity: 0.35; } to { transform: scale(4); opacity: 0; } }
+.radar .km { fill: var(--green-5); font: 600 13px var(--body); }
+.radar .town circle { fill: var(--ground); }
+.radar .town text { fill: var(--ground); font: 600 15px var(--body); }
+.radar .home rect { fill: var(--accent); }
+.radar .home text { fill: var(--ground); font: 700 17px var(--display); }
+.radar figcaption { font-size: 15px; color: var(--green-5); text-align: center; }
+.js .radar:not(.in) .r100 { stroke-dashoffset: 1069; }
+.radar.in .r100 { transition: stroke-dashoffset 1400ms var(--ease-in-out) 200ms; }
+.js .radar:not(.in) .town { opacity: 0; transform: translateY(6px); }
+.radar .town { transition: opacity 400ms var(--ease-out), transform 400ms var(--ease-out); }
+.radar.in .town:nth-of-type(1) { transition-delay: 700ms; } .radar.in .town:nth-of-type(2) { transition-delay: 780ms; } .radar.in .town:nth-of-type(3) { transition-delay: 860ms; } .radar.in .town:nth-of-type(4) { transition-delay: 940ms; } .radar.in .town:nth-of-type(5) { transition-delay: 1020ms; } .radar.in .town:nth-of-type(6) { transition-delay: 1100ms; } .radar.in .town:nth-of-type(7) { transition-delay: 1180ms; }
+.zone-list { list-style: none; margin: 32px 0 0; padding: 0; display: grid; gap: 14px; font-size: 17px; }
+.zone-list li { display: grid; gap: 2px; }
+.zone-list b { font: 600 24px/1.1 var(--display); color: var(--ground); display: flex; align-items: center; gap: 10px; }
+.zone-list b::before { content: ""; width: 10px; height: 18px; border-radius: 999px; background: var(--accent); }
+.band .lead.small { font-size: 17px; margin-top: 28px; }
+
+/* sticky bar */
+.bar { position: fixed; z-index: 30; left: 0; right: 0; top: 0; padding-top: env(safe-area-inset-top, 0px); background: var(--ground); transform: translateY(-110%); transition: transform 320ms var(--ease-out); }
+.bar.on { transform: none; }
+.bar .frame { display: flex; align-items: center; gap: 20px; padding-block: 10px; }
+.bar .mark { font-size: 26px; margin-right: auto; }
+.bar-price { font-weight: 700; font-size: 15px; }
+.bar .btn { min-height: 44px; font-size: 15px; padding: 0 20px; }
+.bar-progress { height: 3px; background: var(--ground-2); }
+.bar-progress i { display: block; height: 100%; background: var(--accent); transform-origin: 0 50%; transform: scaleX(0); }
+
+/* stories progress in the showcase */
+.estado-stage { position: relative; }
+.stories { position: absolute; left: 0; right: 0; top: -28px; display: flex; gap: 6px; max-width: 400px; }
+.stories i { flex: 1; height: 4px; border-radius: 999px; background: var(--ground-2); overflow: hidden; position: relative; }
+.stories i::after { content: ""; position: absolute; inset: 0; background: var(--ink); transform-origin: 0 50%; transform: scaleX(var(--p, 0)); }
+
+/* headline word reveal, like the captions in the video */
+.split .w { display: inline-block; }
+.js .split.rise { opacity: 1; transform: none; }
+.js .split .w { opacity: 0; transform: translateY(0.35em); transition: opacity 500ms var(--ease-out), transform 600ms var(--ease-out); transition-delay: calc(var(--i) * 70ms); }
+.js .split.in .w, .js .in .split .w { opacity: 1; transform: none; }
+
+/* footer blocks rise */
+.js .rise-blocks span { transform: scaleY(0.2); transform-origin: 50% 100%; transition: transform 800ms var(--ease-out); }
+.js .rise-blocks span:nth-child(2) { transition-delay: 60ms; } .js .rise-blocks span:nth-child(3) { transition-delay: 120ms; } .js .rise-blocks span:nth-child(4) { transition-delay: 180ms; } .js .rise-blocks span:nth-child(5) { transition-delay: 240ms; } .js .rise-blocks span:nth-child(6) { transition-delay: 300ms; }
+.js .rise-blocks.in span { transform: none; }
+
+/* hover feedback */
+.btn-wa .wa-ico { transition: transform 200ms var(--ease-out); }
+.btn-wa:hover .wa-ico { transform: rotate(-10deg) scale(1.08); }
+@media (hover: hover) { .menu li { transition: transform 220ms var(--ease-out); } .menu li:hover { transform: translateX(4px); } }
+
+@media (max-width: 1000px) {
+  .radar { grid-column: 1 / -1; }
+  .inst { grid-template-columns: 1fr; gap: 36px; }
+}
+@media (max-width: 720px) {
+  .plans { grid-template-columns: 1fr; }
+  .plan { grid-template-columns: 64px minmax(0, 1fr); padding: 24px 20px; min-height: 0; gap: 18px; }
+  .plan-muro { border-radius: 14px 14px 0 0; }
+  .plan-piso { border-radius: 0 0 14px 14px; }
+  .plan-ico { height: 110px; transform: scale(0.75); transform-origin: 50% 100%; }
+  .plan-price { font-size: 15vw; }
+  .advice { padding: 26px 20px; }
+  .bar-price { display: none; }
+  .bar .mark { font-size: 22px; }
+  .stories { top: -20px; left: 50%; transform: translateX(-50%); width: min(300px, 76vw); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bar { transition: none; }
+  .radar .pulse { animation: none; opacity: 0; }
+  .js .split .w, .js .rise-blocks span, .radar .town, .radar.in .r100 { transition: none; opacity: 1; transform: none; stroke-dashoffset: 0; }
+}
+</style>
+
+<header class="nav">
+  <div class="frame">
+    <a class="mark" href="#inicio" aria-label="Calora, inicio">
+      <svg viewBox="0 0 22 28" aria-hidden="true"><path d="M11 1C11 1 2 11.5 2 18a9 9 0 0 0 18 0C20 11.5 11 1 11 1Z" fill="none" stroke="#1d3a33" stroke-width="2.4"/><path d="M3.2 18h15.6a7.8 7.8 0 0 1-15.6 0Z" fill="#df6432"/></svg>
+      calora
+    </a>
+    <ul>
+      <li><a href="#estado">Tu termo</a></li>
+      <li><a href="#servicios">Servicios</a></li>
+      <li><a href="#cobertura">Cobertura</a></li>
+      <li><a href="#preguntas">Preguntas</a></li>
+    </ul>
+    <a class="btn btn-ink short wa-link" href="#contacto" target="_blank" rel="noopener">WhatsApp</a>
+  </div>
+</header>
+
+<div class="bar" id="bar" aria-hidden="true">
+  <div class="frame">
+    <a class="mark" href="#inicio" tabindex="-1"><svg viewBox="0 0 22 28" aria-hidden="true"><path d="M11 1C11 1 2 11.5 2 18a9 9 0 0 0 18 0C20 11.5 11 1 11 1Z" fill="none" stroke="#1d3a33" stroke-width="2.4"/><path d="M3.2 18h15.6a7.8 7.8 0 0 1-15.6 0Z" fill="#df6432"/></svg>calora</a>
+    <span class="bar-price">Mantención desde $49.990</span>
+    <a class="btn btn-wa wa-link" href="#contacto" target="_blank" rel="noopener" tabindex="-1">Agendar por WhatsApp</a>
+  </div>
+  <div class="bar-progress"><i id="prog"></i></div>
+</div>
+
+<main>
+<section class="hero" id="inicio">
+  <div class="hero-shape" aria-hidden="true"></div>
+  <div class="frame">
+    <div class="hero-copy">
+      <h1>Tu termo te pide una mano</h1>
+      <p class="hero-sub">Mantención e instalación de termos eléctricos a domicilio en Santiago y hasta 100 km a la redonda. Le sacamos el sarro, le cambiamos el ánodo y vuelve el agua caliente.</p>
+      <div class="hero-actions">
+        <a class="btn btn-wa wa-link" href="#contacto" target="_blank" rel="noopener">
+          <svg class="wa-ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.1 5.1 0 0 0 1.1 2.7 11.6 11.6 0 0 0 4.4 3.9c1.6.7 2.3.8 3.1.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.1-1.2l-.5-.2Z"/></svg>
+          Escríbenos por WhatsApp
+        </a>
+        <span class="phone">+56 9 7376 5539</span>
+      </div>
+    </div>
+    <div class="hero-media">
+      <div class="capsule-video shutter">
+        <video id="vid" src="media/calora.mp4" poster="media/poster.webp" autoplay muted loop playsinline preload="metadata" width="720" height="1280" aria-label="Video de Calora: el termo cuenta por qué necesita mantención"></video>
+      </div>
+      <div class="legs" aria-hidden="true"><i></i><i></i></div>
+      <button class="btn btn-ink sound" id="sound" type="button" aria-pressed="false">Escuchar al termo</button>
+    </div>
+  </div>
+</section>
+
+<section class="s estado" id="estado">
+  <div class="frame">
+    <div class="estado-list" role="group" aria-label="Elige cómo está tu termo">
+      <h2>¿Cómo está tu termo?</h2>
+      <button type="button" data-i="0" aria-pressed="false">Recién instalado</button>
+      <button type="button" data-i="1" aria-pressed="false">Seis meses sin mantención</button>
+      <button type="button" data-i="2" aria-pressed="true">Con sarro adentro</button>
+      <button type="button" data-i="3" aria-pressed="false">Agua tibia, luz más cara</button>
+      <button type="button" data-i="4" aria-pressed="false">Después de Calora</button>
+    </div>
+    <div class="estado-stage">
+      <div class="stories" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="disc" id="disc" style="--c: var(--sand)">
+        <img id="estado-img" src="media/sarro.webp" width="800" height="741" alt="El termo de Calora con sarro en el fondo, la resistencia con costra y el ánodo gastado">
+      </div>
+      <p class="fact" id="fact" aria-live="polite"><strong>Sarro hasta en la resistencia</strong>La costra cubre la resistencia y el ánodo se gasta. El termo tiene que trabajar el doble para calentar lo mismo.</p>
+    </div>
+  </div>
+</section>
+
+<section class="s pasos" id="mantencion" style="padding-top:0">
+  <div class="frame">
+    <header>
+      <h2 class="rise split">Así funciona la mantención</h2>
+      <p class="rise" style="--d:80ms">Vamos a tu casa con todo lo necesario. No tienes que desconectar ni mover nada: nosotros vaciamos, limpiamos y dejamos el termo andando.</p>
+    </header>
+    <ol class="acc rise" style="--d:160ms" id="acc">
+      <li data-open="true">
+        <button type="button" aria-expanded="true" aria-controls="p1"><span class="sliver">Nos escribes</span></button>
+        <div class="open" id="p1"><h3>Nos escribes</h3><span></span><p>Por WhatsApp nos cuentas la capacidad de tu termo, hace cuánto no le haces mantención y en qué comuna estás. Te respondemos con precio y horario.</p><img src="media/nuevo.webp" width="800" height="741" alt="" loading="lazy"></div>
+      </li>
+      <li>
+        <button type="button" aria-expanded="false" aria-controls="p2"><span class="sliver">Vamos a tu casa</span></button>
+        <div class="open" id="p2"><h3>Vamos a tu casa</h3><span></span><p>Llegamos el día y la hora que acordamos. Cortamos el agua y la luz del termo y lo vaciamos por completo.</p><img src="media/meses.webp" width="800" height="741" alt="" loading="lazy"></div>
+      </li>
+      <li>
+        <button type="button" aria-expanded="false" aria-controls="p3"><span class="sliver">Limpiamos por dentro</span></button>
+        <div class="open" id="p3"><h3>Limpiamos por dentro</h3><span></span><p>Sacamos el sarro del fondo y de la resistencia, y cambiamos el ánodo gastado por uno nuevo para que el estanque no se oxide.</p><img src="media/calora.webp" width="800" height="741" alt="" loading="lazy"></div>
+      </li>
+      <li>
+        <button type="button" aria-expanded="false" aria-controls="p4"><span class="sliver">Agua caliente otra vez</span></button>
+        <div class="open" id="p4"><h3>Agua caliente otra vez</h3><span></span><p>Llenamos, conectamos y probamos la temperatura contigo. Te dejamos anotada la fecha para la próxima mantención.</p><img src="media/feliz.webp" width="800" height="741" alt="" loading="lazy"></div>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<section class="s serv" id="servicios" style="padding-top:0">
+  <div class="frame">
+    <h2 class="rise split">Lo que hacemos</h2>
+    <div class="cat rise"><h3>Mantención</h3><span>Precio final, con visita incluida</span></div>
+    <div class="plans">
+      <article class="plan plan-muro rise">
+        <div class="plan-ico" aria-hidden="true"><span class="wall"></span><i></i></div>
+        <div class="plan-body">
+          <h4>Termo a muro</h4>
+          <p class="plan-price"><span class="cur">$</span><span class="num" data-to="49990">49.990</span></p>
+          <a class="btn btn-ink plan-btn wa-link" data-msg="Hola Calora, quiero agendar la mantención de mi termo a muro ($49.990)" href="#contacto" target="_blank" rel="noopener">Agendar</a>
+        </div>
+      </article>
+      <article class="plan plan-piso rise" style="--d:90ms">
+        <div class="plan-ico" aria-hidden="true"><i></i><span class="floor"></span></div>
+        <div class="plan-body">
+          <h4>Termo de piso</h4>
+          <p class="plan-price"><span class="cur">$</span><span class="num" data-to="64990">64.990</span></p>
+          <a class="btn btn-ink plan-btn wa-link" data-msg="Hola Calora, quiero agendar la mantención de mi termo de piso ($64.990)" href="#contacto" target="_blank" rel="noopener">Agendar</a>
+        </div>
+      </article>
+    </div>
+    <ul class="incl rise" style="--d:160ms" aria-label="La mantención incluye">
+      <li>Vaciado completo</li><li>Limpieza de sarro</li><li>Cambio de ánodo</li><li>Revisión de resistencia y termostato</li><li>Prueba de temperatura</li>
+    </ul>
+
+    <div class="cat rise"><h3>Instalación</h3><span>Cotiza con nosotros y te asesoramos</span></div>
+    <div class="inst">
+      <ul class="menu">
+        <li class="rise"><span class="bullet"><img src="media/nuevo.webp" width="800" height="741" alt="" loading="lazy"></span><div><div class="row"><span>Instalación de termo nuevo</span></div><p>Conexión de agua fría, caliente y eléctrica, con prueba completa antes de irnos.</p></div></li>
+        <li class="rise" style="--d:80ms"><span class="bullet"><img src="media/feliz.webp" width="800" height="741" alt="" loading="lazy"></span><div><div class="row"><span>Cambio de termo antiguo</span></div><p>Retiramos el termo viejo y dejamos el nuevo instalado en el mismo lugar.</p></div></li>
+        <li class="rise"><span class="bullet"><img src="media/calora.webp" width="800" height="741" alt="" loading="lazy"></span><div><div class="row"><span>De calefont a termo eléctrico</span></div><p>Evaluamos tu instalación eléctrica y te recomendamos la capacidad justa para tu familia.</p></div></li>
+      </ul>
+      <div class="advice rise" style="--d:120ms">
+        <p class="advice-t">Cotiza con nosotros y te asesoramos</p>
+        <p>Cuéntanos cuántas personas viven en tu casa y dónde quieres el termo. Te decimos qué capacidad te conviene y cuánto sale instalarlo.</p>
+        <a class="btn btn-wa wa-link" data-msg="Hola Calora, quiero cotizar la instalación de un termo eléctrico" href="#contacto" target="_blank" rel="noopener">Cotizar instalación</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="cobertura">
+  <div class="frame">
+    <div class="band-head rise">
+      <h2 class="split">Santiago y alrededores</h2>
+      <p class="lead">Vamos a todas las comunas de la Región Metropolitana y a las ciudades que están a no más de 100 km de Santiago.</p>
+      <ul class="zone-list">
+        <li><b>Región Metropolitana</b> Todas las comunas</li>
+        <li><b>Hasta 100 km</b> Rancagua, Los Andes, San Felipe, Melipilla y otras ciudades cercanas</li>
+      </ul>
+      <p class="lead small">¿No sabes si llegamos a tu casa? Escríbenos con tu comuna y te confirmamos.</p>
+    </div>
+    <figure class="radar rise" style="--d:100ms">
+      <svg viewBox="0 0 400 400" role="img" aria-labelledby="radar-t">
+        <title id="radar-t">Zona de cobertura: un círculo de 100 km alrededor de Santiago</title>
+        <circle class="ring r100" cx="200" cy="200" r="170"/>
+        <circle class="ring" cx="200" cy="200" r="127.5"/>
+        <circle class="ring" cx="200" cy="200" r="85"/>
+        <circle class="ring" cx="200" cy="200" r="42.5"/>
+        <circle class="pulse" cx="200" cy="200" r="42.5"/>
+        <text class="km" x="200" y="24" text-anchor="middle">100 km</text>
+        <text class="km" x="200" y="109" text-anchor="middle">50 km</text>
+        <g class="town"><circle cx="209" cy="83" r="5"/><text x="221" y="88" text-anchor="start">Los Andes</text></g><g class="town"><circle cx="190" cy="67" r="5"/><text x="178" y="72" text-anchor="end">San Felipe</text></g><g class="town"><circle cx="200" cy="152" r="5"/><text x="212" y="157" text-anchor="start">Colina</text></g><g class="town"><circle cx="157" cy="239" r="5"/><text x="157" y="227" text-anchor="middle">Talagante</text></g><g class="town"><circle cx="187" cy="253" r="5"/><text x="199" y="269" text-anchor="start">Buin</text></g><g class="town"><circle cx="113" cy="246" r="5"/><text x="101" y="251" text-anchor="end">Melipilla</text></g><g class="town"><circle cx="187" cy="336" r="5"/><text x="199" y="341" text-anchor="start">Rancagua</text></g>
+        <g class="home"><rect x="191" y="182" width="18" height="30" rx="9"/><text x="220" y="205">Santiago</text></g>
+      </svg>
+      <figcaption>Distancias aproximadas en línea recta desde el centro de Santiago.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="s faq" id="preguntas">
+  <div class="frame"><div>
+    <h2 class="rise split">Lo que nos preguntan</h2>
+    <ol class="cards rise" style="--d:80ms" id="cards">
+      <li class="card" data-open="true"><div class="shape"><span class="topic">Cada cuánto</span><button type="button" aria-expanded="true">¿Cada cuánto hay que hacerle mantención al termo?</button><div class="ans"><div><p>Una vez al año. Si en tu casa el agua deja mucho sarro en la tetera o la ducha, mejor cada seis meses.</p></div></div></div></li>
+      <li class="card"><div class="shape"><span class="topic">El ánodo</span><button type="button" aria-expanded="false">¿Qué es el ánodo y por qué hay que cambiarlo?</button><div class="ans"><div><p>Es una barra de magnesio dentro del termo. Se va gastando a propósito para que el óxido ataque al ánodo y no al estanque. Cuando se acaba, el estanque empieza a oxidarse.</p></div></div></div></li>
+      <li class="card"><div class="shape"><span class="topic">Agua tibia</span><button type="button" aria-expanded="false">El agua me sale tibia. ¿Es el termo?</button><div class="ans"><div><p>Casi siempre es sarro sobre la resistencia o un termostato que falla. En la visita lo revisamos y te decimos qué hay que hacer antes de cobrarte nada extra.</p></div></div></div></li>
+      <li class="card"><div class="shape"><span class="topic">Cobertura</span><button type="button" aria-expanded="false">¿Van fuera de Santiago?</button><div class="ans"><div><p>Sí, a ciudades que estén a no más de 100 km de Santiago, como Rancagua, Los Andes o Melipilla. Escríbenos con tu comuna y te confirmamos el día.</p></div></div></div></li>
+      <li class="card"><div class="shape"><span class="topic">Pago</span><button type="button" aria-expanded="false">¿Cómo se paga?</button><div class="ans"><div><p>Transferencia, débito o crédito. Pagas cuando el trabajo está terminado y probado.</p></div></div></div></li>
+    </ol>
+  </div></div>
+</section>
+
+<section class="s" id="contacto" style="padding-top:0;padding-bottom:clamp(64px,6vw,96px)">
+  <div class="frame">
+    <div class="coupon rise">
+      <div class="coupon-l">
+        <h2>Agenda tu mantención</h2>
+        <img src="media/feliz.webp" width="800" height="741" alt="El termo de Calora feliz y limpio después de la mantención" loading="lazy">
+        <div style="display:grid;gap:10px">
+          <p>Déjanos tus datos y se abre WhatsApp con tu mensaje listo. Si prefieres, escríbenos directo:</p>
+          <span class="phone">+56 9 7376 5539</span>
+        </div>
+      </div>
+      <form id="form" novalidate>
+        <label class="sr" for="f-nombre">Nombre</label>
+        <input id="f-nombre" name="nombre" autocomplete="name" placeholder="Tu nombre" required>
+        <label class="sr" for="f-comuna">Comuna o ciudad</label>
+        <input id="f-comuna" name="comuna" placeholder="Comuna o ciudad" required>
+        <label class="sr" for="f-litros">Litros del termo</label>
+        <input id="f-litros" name="litros" inputmode="numeric" placeholder="Litros del termo (si sabes)">
+        <label class="sr" for="f-serv">Servicio</label>
+        <select id="f-serv" name="serv">
+          <option>Mantención termo a muro ($49.990)</option>
+          <option>Mantención termo de piso ($64.990)</option>
+          <option>Cambio de ánodo</option>
+          <option>El agua sale tibia</option>
+          <option>Instalación de termo nuevo</option>
+          <option>Cambio de calefont a termo</option>
+          <option>Otra consulta</option>
+        </select>
+        <button class="btn btn-wa" type="submit">Enviar por WhatsApp</button>
+        <p class="form-note" id="form-note"></p>
+      </form>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="foot">
+  <div class="frame">
+    <div class="blocks rise-blocks" aria-label="calora"><span>c</span><span>a</span><span>l</span><span>o</span><span>r</span><span>a</span></div>
+    <div class="foot-cols">
+      <nav aria-label="Pie de página">
+        <div><b>Tu termo</b><a href="#estado">Cómo está</a><a href="#mantencion">Mantención</a></div>
+        <div><b>Servicios</b><a href="#servicios">Mantención</a><a href="#servicios">Instalación</a></div>
+        <div><b>Calora</b><a href="#cobertura">Cobertura</a><a href="#preguntas">Preguntas</a></div>
+        <div><b>Síguenos</b><a href="https://www.instagram.com/calora_si/" target="_blank" rel="noopener">Instagram @calora_si</a><a href="https://www.tiktok.com/@termos.carola" target="_blank" rel="noopener">TikTok @termos.carola</a></div>
+      </nav>
+      <address>
+        <span>WhatsApp <span class="phone" style="font-size:18px">+56 9 7376 5539</span></span>
+        <span>Termos eléctricos · Santiago y hasta 100 km</span><span><a href="https://www.instagram.com/calora_si/" target="_blank" rel="noopener">@calora_si</a> · <a href="https://www.tiktok.com/@termos.carola" target="_blank" rel="noopener">@termos.carola</a></span>
+      </address>
+    </div>
+    <div class="foot-last">
+      <span>© 2026 Calora</span>
+      <a class="btn btn-wa wa-link" href="#contacto" target="_blank" rel="noopener">Escríbenos</a>
+    </div>
+  </div>
+</footer>
+
+<a class="btn btn-wa wa-float wa-link" href="#contacto" target="_blank" rel="noopener" aria-label="Escríbenos por WhatsApp">
+  <svg class="wa-ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.1 5.1 0 0 0 1.1 2.7 11.6 11.6 0 0 0 4.4 3.9c1.6.7 2.3.8 3.1.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.1-1.2l-.5-.2Z"/></svg>
+</a>
+
+<script>
+const WA = "56973765539";
+const waUrl = (msg) => "https://wa.me/" + WA + "?text=" + encodeURIComponent(msg);
+document.querySelectorAll(".wa-link").forEach((a) => { a.href = waUrl(a.dataset.msg || "Hola Calora, quiero agendar una mantención de mi termo"); });
+
+// video sound toggle
+const vid = document.getElementById("vid");
+const sound = document.getElementById("sound");
+sound.addEventListener("click", () => {
+  const on = vid.muted;
+  vid.muted = !on;
+  if (on) { vid.currentTime = 0; vid.play().catch(() => {}); }
+  sound.setAttribute("aria-pressed", String(on));
+  sound.textContent = on ? "Silenciar" : "Escuchar al termo";
+});
+
+// live thing: how is your termo
+const estados = [
+  { img: "nuevo", c: "var(--peach)", t: "Trabaja todos los días", p: "Recién instalado calienta rápido y parejo. Para que siga así, necesita una mantención al año.", alt: "El termo de Calora recién instalado, sonriendo" },
+  { img: "meses", c: "var(--ground-2)", t: "Empieza a cansarse", p: "Después de unos meses sin mantención, el sarro del agua se empieza a juntar en el fondo del estanque.", alt: "El termo de Calora cansado después de seis meses sin mantención" },
+  { img: "sarro", c: "var(--sand)", t: "Sarro hasta en la resistencia", p: "La costra cubre la resistencia y el ánodo se gasta. El termo tiene que trabajar el doble para calentar lo mismo.", alt: "El termo de Calora con sarro en el fondo, la resistencia con costra y el ánodo gastado" },
+  { img: "tibia", c: "var(--green-5)", t: "Ducha tibia, cuenta alta", p: "El agua sale tibia y la cuenta de la luz sube, porque la resistencia pasa más tiempo encendida.", alt: "El termo de Calora agotado, con el agua de la ducha tibia y la cuenta de la luz más alta" },
+  { img: "calora", c: "var(--peach)", t: "Limpio y con ánodo nuevo", p: "Vamos a tu casa, lo limpiamos por dentro y le cambiamos el ánodo. Te lo agradece en cada ducha.", alt: "El termo de Calora limpio por dentro y con ánodo nuevo después de la visita" },
+];
+const disc = document.getElementById("disc");
+const eimg = document.getElementById("estado-img");
+const fact = document.getElementById("fact");
+estados.forEach((e) => { const i = new Image(); i.src = "media/" + e.img + ".webp"; });
+document.querySelectorAll(".estado-list button").forEach((b) => {
+  b.addEventListener("click", () => {
+    const e = estados[+b.dataset.i];
+    document.querySelectorAll(".estado-list button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    eimg.classList.add("out");
+    setTimeout(() => {
+      eimg.src = "media/" + e.img + ".webp"; eimg.alt = e.alt;
+      disc.style.setProperty("--c", e.c);
+      fact.innerHTML = "<strong></strong>"; fact.firstChild.textContent = e.t; fact.append(e.p);
+      eimg.classList.remove("out");
+    }, 160);
+  });
+});
+
+// accordion
+const acc = document.getElementById("acc");
+acc.querySelectorAll("li > button").forEach((b) => {
+  b.addEventListener("click", () => {
+    acc.querySelectorAll("li").forEach((li) => {
+      const open = li === b.parentElement;
+      li.dataset.open = String(open);
+      li.querySelector("button").setAttribute("aria-expanded", String(open));
+    });
+  });
+});
+
+// faq cards
+const cards = document.getElementById("cards");
+cards.querySelectorAll(".card button").forEach((b) => {
+  b.addEventListener("click", () => {
+    const me = b.closest(".card");
+    const wasOpen = me.dataset.open === "true";
+    cards.querySelectorAll(".card").forEach((c) => { c.dataset.open = "false"; c.querySelector("button").setAttribute("aria-expanded", "false"); });
+    if (!wasOpen) { me.dataset.open = "true"; b.setAttribute("aria-expanded", "true"); }
+  });
+});
+
+// form -> WhatsApp
+const form = document.getElementById("form");
+form.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const d = new FormData(form);
+  const note = document.getElementById("form-note");
+  const missing = ["nombre", "comuna"].find((k) => !String(d.get(k) || "").trim());
+  if (missing) { note.textContent = "Escribe tu nombre y tu comuna para poder cotizarte."; form.querySelector("[name=" + missing + "]").focus(); return; }
+  const litros = String(d.get("litros") || "").trim();
+  const msg = "Hola Calora, soy " + d.get("nombre") + " de " + d.get("comuna") + ". Necesito: " + d.get("serv") + "." + (litros ? " Mi termo es de " + litros + " litros." : "");
+  note.textContent = "Tu mensaje está listo. ";
+  const a = document.createElement("a"); a.href = waUrl(msg); a.target = "_blank"; a.rel = "noopener"; a.textContent = "Abrir WhatsApp";
+  note.appendChild(a);
+});
+
+// split headlines into words for the reveal
+document.querySelectorAll(".split").forEach((h) => { const words = h.textContent.trim().split(/\s+/); h.setAttribute("aria-label", h.textContent.trim()); h.textContent = ""; words.forEach((w, i) => { const sp = document.createElement("span"); sp.className = "w"; sp.setAttribute("aria-hidden", "true"); sp.style.setProperty("--i", i); sp.textContent = w; h.append(sp, i < words.length - 1 ? " " : ""); }); });
+
+// prices count up when they come into view
+function countUp(el) {
+  const to = +el.dataset.to, t0 = performance.now(), dur = 900;
+  const fmt = (n) => n.toLocaleString("es-CL");
+  const step = (t) => { const k = Math.min(1, (t - t0) / dur); const e = 1 - Math.pow(1 - k, 3); el.textContent = fmt(Math.round(to * e / 10) * 10 || 0); if (k < 1) requestAnimationFrame(step); else el.textContent = fmt(to); };
+  requestAnimationFrame(step);
+}
+
+// sticky bar + scroll progress
+(() => {
+  const bar = document.getElementById("bar"), prog = document.getElementById("prog"), hero = document.getElementById("inicio");
+  let ticking = false;
+  const update = () => {
+    ticking = false;
+    const on = scrollY > hero.offsetHeight * 0.75;
+    bar.classList.toggle("on", on);
+    bar.setAttribute("aria-hidden", String(!on));
+    bar.querySelectorAll("a").forEach((a) => a.tabIndex = on ? 0 : -1);
+    const max = document.documentElement.scrollHeight - innerHeight;
+    prog.style.transform = "scaleX(" + (max > 0 ? scrollY / max : 0) + ")";
+  };
+  addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+  update();
+})();
+
+// showcase advances by itself like stories until the visitor picks one
+(() => {
+  const btns = [...document.querySelectorAll(".estado-list button")];
+  const bars = [...document.querySelectorAll(".stories i")];
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let cur = 2, t0 = 0, raf = 0, auto = !reduce, visible = false;
+  const DUR = 4200;
+  const paint = (p) => bars.forEach((b, i) => b.style.setProperty("--p", i < cur ? 1 : i === cur ? p : 0));
+  paint(1);
+  btns.forEach((b) => b.addEventListener("click", (e) => { cur = +b.dataset.i; paint(1); if (e.isTrusted) { auto = false; cancelAnimationFrame(raf); } }));
+  const tick = (t) => {
+    if (!auto) return;
+    if (!visible) { raf = requestAnimationFrame(tick); t0 = t; return; }
+    const p = Math.min(1, (t - t0) / DUR); paint(p);
+    if (p >= 1) { const next = (cur + 1) % btns.length; btns[next].click(); t0 = t; }
+    raf = requestAnimationFrame(tick);
+  };
+  if (auto && "IntersectionObserver" in window) {
+    new IntersectionObserver((en) => { visible = en[0].isIntersecting; }, { threshold: 0.4 }).observe(document.getElementById("estado"));
+    raf = requestAnimationFrame((t) => { t0 = t; tick(t); });
+  }
+})();
+
+// entrances: only parts below the first screen wait for the scroll; the first screen is complete at rest
+(() => {
+  const els = [...document.querySelectorAll(".rise, .rise-blocks")];
+  if (!("IntersectionObserver" in window) || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const fold = innerHeight;
+  const later = els.filter((el) => el.getBoundingClientRect().top > fold * 0.9);
+  if (!later.length) return;
+  document.documentElement.classList.add("js");
+  els.filter((el) => !later.includes(el)).forEach((el) => el.classList.add("in"));
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((en) => { if (en.isIntersecting) { en.target.classList.add("in"); en.target.querySelectorAll(".num[data-to]").forEach(countUp); io.unobserve(en.target); } });
+  }, { rootMargin: "0px 0px -8% 0px" });
+  later.forEach((el) => io.observe(el));
+})();
+</script>
