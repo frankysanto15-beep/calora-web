@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#f0eadc">
+<title>Mi termo Calora</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Calora">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+:root {
+  --ground: #f0eadc; --ground-2: #e7dfcc; --card: #fbf7ef; --line: #d6ccb6;
+  --ink: #1d3a33; --ink-soft: #3f5a52;
+  --accent: #df6432; --accent-ink: #fff8ef; --accent-text: #b4461b;
+  --ok: #2c5247; --ok-bg: #c4d3c8; --soon-bg: #f4d9c6; --late-bg: #f3c4b0;
+  --wa: #2bc463; --wa-ink: #0f2a1e;
+  --display: "Fraunces", Georgia, serif;
+  --body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--ground); color: var(--ink); font: 17px/1.5 var(--body); }
+h1, h2, h3 { font-family: var(--display); font-weight: 600; letter-spacing: -0.02em; line-height: 1.05; margin: 0; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.wrap { max-width: 640px; margin: 0 auto; padding: max(8px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 64px max(16px, env(safe-area-inset-left)); }
+header.top { display: flex; align-items: center; justify-content: space-between; padding: 16px 0 20px; }
+.mark { display: inline-flex; align-items: center; gap: 8px; font: 600 28px/1 var(--display); }
+.mark svg { width: 20px; height: 26px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px; padding: 0 22px; border-radius: 999px; border: 0; font-weight: 700; cursor: pointer; text-decoration: none; transition: transform 140ms cubic-bezier(.23,1,.32,1); }
+.btn:active { transform: scale(.97); }
+.btn-wa { background: var(--wa); color: var(--wa-ink); }
+.btn-ink { background: var(--ink); color: var(--ground); }
+.btn-ghost { background: transparent; box-shadow: inset 0 0 0 2px var(--line); }
+.btn-sm { min-height: 44px; padding: 0 16px; font-size: 15px; }
+.stack { display: grid; gap: 10px; }
+.card { background: var(--card); border-radius: 28px; padding: 22px; margin-bottom: 14px; }
+.hola { font-size: clamp(32px, 8vw, 44px); margin-bottom: 6px; }
+.equipo { color: var(--ink-soft); margin: 0 0 18px; }
+.next { display: grid; grid-template-columns: auto 1fr; gap: 20px; align-items: center; margin-bottom: 20px; }
+.tank { width: 72px; height: 128px; border-radius: 999px; border: 6px solid var(--ink); position: relative; overflow: hidden; background: var(--ground); }
+.tank i { position: absolute; inset: auto 0 0; background: var(--ok); transition: height 800ms cubic-bezier(.23,1,.32,1); }
+.tank.soon i { background: var(--accent); } .tank.late i { background: #8a2a0c; }
+.next small { display: block; font-weight: 700; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); }
+.next h2 { font-size: 30px; margin: 4px 0 8px; }
+.pill { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 4px 12px; font-size: 15px; font-weight: 700; }
+.pill::before { content: ""; width: 8px; height: 14px; border-radius: 999px; background: currentColor; }
+.ok { background: var(--ok-bg); color: var(--ok); } .soon { background: var(--soon-bg); color: var(--accent-text); } .late { background: var(--late-bg); color: #8a2a0c; }
+.avisos { background: var(--ground); border-radius: 20px; padding: 14px 16px; margin-top: 14px; }
+.avisos p { margin: 0 0 10px; font-size: 15px; color: var(--ink-soft); }
+.avisos .row { display: flex; flex-wrap: wrap; gap: 8px; }
+.estado { font-weight: 600; color: var(--ok); }
+h2.sec { font-size: 26px; margin: 26px 4px 12px; }
+.agenda { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.agenda > li { background: var(--card); border-radius: 22px; padding: 16px 18px; display: grid; grid-template-columns: 14px 1fr; gap: 0 14px; }
+.agenda > li::before { content: ""; width: 14px; height: 24px; border-radius: 999px; background: var(--ok); margin-top: 2px; }
+.agenda > li.futura { background: transparent; border: 2px dashed var(--line); }
+.agenda > li.futura::before { background: var(--accent); }
+.agenda h3 { font-size: 20px; margin-bottom: 6px; }
+.checks { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 0 0 8px; padding: 0; }
+.checks li { background: var(--ok-bg); color: var(--ok); border-radius: 999px; padding: 2px 10px; font-size: 14px; font-weight: 600; }
+.sarro { display: flex; gap: 4px; align-items: center; font-size: 15px; color: var(--ink-soft); }
+.sarro i { width: 20px; height: 9px; border-radius: 999px; background: var(--ground-2); } .sarro i.on { background: var(--accent); }
+.notes { margin: 8px 0 0; white-space: pre-wrap; }
+.empty { text-align: center; padding: 40px 8px; }
+.empty p { color: var(--ink-soft); margin: 10px 0 20px; }
+.install { display: flex; gap: 14px; align-items: center; justify-content: space-between; background: var(--ink); color: var(--ground); border-radius: 22px; padding: 14px 16px; margin-bottom: 14px; }
+.install p { margin: 0; font-size: 15px; }
+.install .btn { background: var(--accent); color: var(--accent-ink); flex: none; }
+.foot { text-align: center; color: var(--ink-soft); font-size: 14px; margin-top: 28px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top"><span class="mark"><svg viewBox="0 0 22 28" aria-hidden="true"><path d="M11 1C11 1 2 11.5 2 18a9 9 0 0 0 18 0C20 11.5 11 1 11 1Z" fill="none" stroke="#1d3a33" stroke-width="2.4"/><path d="M3.2 18h15.6a7.8 7.8 0 0 1-15.6 0Z" fill="#df6432"/></svg>calora</span></header>
+  <div id="install" class="install" hidden><p id="installTxt">Instala Calora en tu teléfono para tener tu termo siempre a mano.</p><button id="installBtn" class="btn btn-sm" type="button" hidden>Instalar</button></div>
+  <main id="app"></main>
+  <p class="foot">Calora · Mantención de termos eléctricos · +56 9 7376 5539</p>
+</div>
+<script>
+const WA = "56973765539";
+const SARRO = ["Nada", "Poco", "Medio", "Mucho"];
+const CACHE = "calora-cliente"; // lo comparte sw.js, que lee los mismos datos para avisar
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const hoy = () => new Date().toLocaleDateString("sv");
+const parse = (d) => new Date(d + "T12:00:00");
+const dias = (d) => Math.round((parse(d) - parse(hoy())) / 864e5);
+const fmt = (d) => parse(d).toLocaleDateString("es-CL", { day: "numeric", month: "long", year: "numeric" });
+const waUrl = (msg) => "https://wa.me/" + WA + "?text=" + encodeURIComponent(msg);
+
+// --- datos: llegan en el enlace #d=… y se guardan en el teléfono ---
+const FECHA = /^\d{4}-\d{2}-\d{2}$/;
+const valido = (e) => e && /^[a-z0-9]+$/.test(e.id) && typeof e.nombre === "string" && Array.isArray(e.mants) &&
+  e.mants.every((m) => FECHA.test(m.fecha) && FECHA.test(m.proxima) && Array.isArray(m.checks) && m.checks.every((x) => typeof x === "string") && [0, 1, 2, 3].includes(m.sarro));
+function leerEnlace() {
+  const m = location.hash.match(/^#d=([\w-]+)$/);
+  if (!m) return null;
+  try {
+    const s = m[1].replace(/-/g, "+").replace(/_/g, "/");
+    const e = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(s + "=".repeat((4 - s.length % 4) % 4)), (c) => c.charCodeAt(0))));
+    return valido(e) ? e : null;
+  } catch { return null; }
+}
+async function leer() { try { const r = await (await caches.open(CACHE)).match("datos.json"); return r ? await r.json() : {}; } catch { return {}; } }
+async function guardar(d) { try { await (await caches.open(CACHE)).put("datos.json", new Response(JSON.stringify(d))); } catch {} }
+
+function estado(m) {
+  const d = dias(m.proxima);
+  if (d < 0) return { cls: "late", txt: `Atrasada ${-d} días`, d };
+  if (d <= 30) return { cls: "soon", txt: d === 0 ? "Toca hoy" : `Faltan ${d} días`, d };
+  return { cls: "ok", txt: `Faltan ${d} días`, d };
+}
+
+function render(equipos) {
+  const lista = Object.values(equipos);
+  if (!lista.length) {
+    $("#app").innerHTML = `<div class="card empty"><h1 class="hola">Tu termo, al día</h1>
+      <p>Aquí verás tu equipo, tus mantenciones y te avisaremos cuando toque la próxima. Abre el enlace que te enviamos por WhatsApp después de tu mantención.</p>
+      <a class="btn btn-wa" href="${waUrl("Hola Calora, quiero el enlace de mi historial de mantenciones.")}" target="_blank" rel="noopener">Pedir mi enlace</a></div>`;
+    return;
+  }
+  $("#app").innerHTML = lista.map((e) => {
+    const m0 = e.mants[0], s = m0 && estado(m0);
+    const total = m0 ? Math.max(1, dias(m0.proxima) - dias(m0.fecha)) : 1;
+    const pct = s ? Math.max(0, Math.min(100, (s.d / total) * 100)) : 0;
+    const equipo = ["Termo", e.marca, e.litros, e.tipo && "· " + e.tipo].filter(Boolean).join(" ");
+    return `<section class="card">
+      <h1 class="hola">Hola, ${esc(e.nombre.split(" ")[0])}</h1>
+      <p class="equipo">${esc(equipo)}</p>
+      ${m0 ? `<div class="next">
+        <div class="tank ${s.cls}" role="img" aria-label="Tiempo restante hasta la próxima mantención"><i style="height:${pct}%"></i></div>
+        <div><small>Próxima mantención</small><h2>${fmt(m0.proxima)}</h2><span class="pill ${s.cls}">${s.txt}</span></div>
+      </div>
+      <div class="stack">
+        <a class="btn btn-wa" target="_blank" rel="noopener" href="${esc(waUrl(`Hola Calora, quiero agendar la mantención de mi termo ${[e.marca, e.litros].filter(Boolean).join(" ")}. Soy ${e.nombre}.`))}">Agendar por WhatsApp</a>
+      </div>
+      <div class="avisos">
+        <p>Te avisamos cuando toque la mantención.</p>
+        <div class="row">
+          <button class="btn btn-ink btn-sm" type="button" data-cal="${e.id}">📅 Agregar a mi calendario</button>
+          ${"Notification" in window ? `<button class="btn btn-ghost btn-sm aviso-btn" type="button">🔔 Activar avisos</button>` : ""}
+        </div>
+        <p class="estado" data-aviso-estado style="margin:10px 0 0"></p>
+      </div>` : ""}
+    </section>
+    <h2 class="sec">Mi agenda</h2>
+    <ol class="agenda">
+      ${m0 ? `<li class="futura"><div><h3>${fmt(m0.proxima)}</h3><p style="margin:0;color:var(--ink-soft)">Próxima mantención</p></div></li>` : ""}
+      ${e.mants.map((m) => `<li><div><h3>${fmt(m.fecha)}</h3>
+        <ul class="checks">${m.checks.map((x) => `<li>✓ ${esc(x)}</li>`).join("")}</ul>
+        <div class="sarro">Sarro: ${[1, 2, 3].map((i) => `<i class="${i <= m.sarro ? "on" : ""}"></i>`).join("")} ${SARRO[m.sarro]}</div>
+        ${m.notas ? `<p class="notes">${esc(m.notas)}</p>` : ""}</div></li>`).join("")}
+    </ol>`;
+  }).join("");
+  pintarAvisos();
+}
+
+// --- recordatorio en el calendario: el teléfono muestra el aviso aunque la app esté cerrada ---
+function ics(e) {
+  const m = e.mants[0], d = m.proxima.replace(/-/g, ""), fin = new Date(parse(m.proxima).getTime() + 864e5).toLocaleDateString("sv").replace(/-/g, "");
+  const stamp = new Date().toISOString().replace(/[-:]/g, "").slice(0, 15) + "Z";
+  const txt = "Toca la mantención de tu termo. Agenda por WhatsApp al +56 9 7376 5539: https://wa.me/" + WA;
+  return ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Calora//Mantenciones//ES", "BEGIN:VEVENT",
+    `UID:${e.id}-${d}@calora`, `DTSTAMP:${stamp}`, `DTSTART;VALUE=DATE:${d}`, `DTEND;VALUE=DATE:${fin}`,
+    "SUMMARY:Mantención termo Calora", `DESCRIPTION:${txt}`,
+    "BEGIN:VALARM", "ACTION:DISPLAY", "TRIGGER:-P7D", "DESCRIPTION:En una semana toca la mantención de tu termo", "END:VALARM",
+    "BEGIN:VALARM", "ACTION:DISPLAY", "TRIGGER:PT10H", "DESCRIPTION:Hoy toca la mantención de tu termo", "END:VALARM",
+    "END:VEVENT", "END:VCALENDAR"].join("\r\n");
+}
+console.assert(ics({ id: "x1", mants: [{ proxima: "2026-12-31" }] }).includes("DTEND;VALUE=DATE:20270101"), "ics");
+
+// --- avisos en pantalla: service worker + revisión diaria (Android) y al abrir la app ---
+const sw = "serviceWorker" in navigator ? navigator.serviceWorker.register("sw.js").then(() => navigator.serviceWorker.ready).catch(() => null) : Promise.resolve(null);
+async function pintarAvisos() {
+  const on = "Notification" in window && Notification.permission === "granted";
+  document.querySelectorAll("[data-aviso-estado]").forEach((p) => p.textContent = on ? "✓ Avisos activados en este teléfono" : window.Notification?.permission === "denied" ? "Los avisos están bloqueados en la configuración del navegador." : "");
+  document.querySelectorAll(".aviso-btn").forEach((b) => b.hidden = on);
+  const reg = await sw;
+  if (on && reg) {
+    try { await reg.periodicSync?.register("calora-aviso", { minInterval: 24 * 60 * 60 * 1000 }); } catch {} // solo Chrome con la app instalada
+    reg.active?.postMessage("revisar");
+  }
+}
+document.addEventListener("click", async (ev) => {
+  const cal = ev.target.closest("[data-cal]");
+  if (cal) {
+    const e = (await leer())[cal.dataset.cal];
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([ics(e)], { type: "text/calendar" }));
+    a.download = "mantencion-calora.ics"; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+  if (ev.target.closest(".aviso-btn")) { await Notification.requestPermission(); pintarAvisos(); }
+});
+
+// --- instalar como app ---
+let promptInstalar;
+const instalada = matchMedia("(display-mode: standalone)").matches || navigator.standalone;
+addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); promptInstalar = e; $("#install").hidden = false; $("#installBtn").hidden = false; });
+$("#installBtn").onclick = async () => { promptInstalar.prompt(); await promptInstalar.userChoice; $("#install").hidden = true; };
+if (!instalada && /iphone|ipad/i.test(navigator.userAgent)) {
+  $("#install").hidden = false;
+  $("#installTxt").textContent = "Para recibir avisos en iPhone: toca Compartir ⬆️ y luego “Agregar a inicio”. Abre Calora desde ahí y activa los avisos.";
+}
+
+(async () => {
+  const equipos = await leer(), nuevo = leerEnlace();
+  if (nuevo) { equipos[nuevo.id] = nuevo; await guardar(equipos); history.replaceState(null, "", location.pathname); }
+  render(equipos);
+})();
+</script>
+</body>
+</html>

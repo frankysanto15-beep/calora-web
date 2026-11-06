@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
 <title>Calora Registro</title>
+<link rel="icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Figtree:wght@400;500;600;700&display=swap">
@@ -20,6 +21,7 @@
   color-scheme: light;
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body { margin: 0; background: var(--ground); color: var(--ink); font: 17px/1.5 var(--body); }
 h1, h2, h3 { font-family: var(--display); font-weight: 600; letter-spacing: -0.02em; line-height: 1.05; margin: 0; }
 button, input, select, textarea { font: inherit; color: inherit; }
@@ -212,9 +214,16 @@ function resumen(c, m) {
   return `Hola ${c.nombre} 👋, te dejamos el registro de la mantención de tu termo (${c.litros}${c.marca ? ", " + c.marca : ""}) del ${fmt(m.fecha)}:\n\n` +
     m.checks.map((x) => "✅ " + x).join("\n") +
     `\nSarro encontrado: ${SARRO[m.sarro]}` + (m.notas ? `\n\n📝 ${m.notas}` : "") +
-    `\n\n📅 Próxima mantención: ${fmt(m.proxima)}.\n¡Gracias por confiar en Calora! 🔥`;
+    `\n\n📅 Próxima mantención: ${fmt(m.proxima)}.\n¡Gracias por confiar en Calora! 🔥` + appCliente(c);
 }
-const recordatorio = (c) => `Hola ${c.nombre} 👋, te escribimos de Calora. Ya toca la mantención de tu termo ${c.litros} (la última fue el ${fmt(last(c).fecha)}). ¿Te agendamos una visita esta semana?`;
+const recordatorio = (c) => `Hola ${c.nombre} 👋, te escribimos de Calora. Ya toca la mantención de tu termo ${c.litros} (la última fue el ${fmt(last(c).fecha)}). ¿Te agendamos una visita esta semana?` + appCliente(c);
+// enlace a cliente.html con el historial (sin fotos) dentro del # : no pasa por ningún servidor
+function appCliente(c) {
+  const datos = { id: c.id, nombre: c.nombre, marca: c.marca, litros: c.litros, tipo: c.tipo,
+    mants: c.mants.map(({ fecha, proxima, checks, sarro, notas }) => ({ fecha, proxima, checks, sarro, notas })) };
+  const b64 = btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(datos)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  return "\n\n📲 Tu historial y recordatorios: " + new URL("cliente.html#d=" + b64, location.href).href;
+}
 
 async function shrink(file) {
   const img = await createImageBitmap(file);
