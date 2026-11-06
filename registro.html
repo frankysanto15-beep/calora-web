@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Calora Registro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+:root {
+  --ground: #f0eadc; --ground-2: #e7dfcc; --card: #fbf7ef;
+  --ink: #1d3a33; --ink-soft: #3f5a52; --line: #d6ccb6;
+  --accent: #df6432; --accent-ink: #fff8ef; --accent-text: #b4461b;
+  --ok: #2c5247; --ok-bg: #c4d3c8; --soon-bg: #f4d9c6; --late-bg: #f3c4b0;
+  --wa: #2bc463; --wa-ink: #0f2a1e;
+  --display: "Fraunces", Georgia, serif;
+  --body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--ground); color: var(--ink); font: 17px/1.5 var(--body); }
+h1, h2, h3 { font-family: var(--display); font-weight: 600; letter-spacing: -0.02em; line-height: 1.05; margin: 0; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.wrap { max-width: 860px; margin: 0 auto; padding: 0 max(16px, env(safe-area-inset-left)) 96px; }
+header.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 20px 0; }
+.mark { display: inline-flex; align-items: center; gap: 8px; font: 600 28px/1 var(--display); text-decoration: none; color: inherit; }
+.mark small { font: 600 14px/1 var(--body); color: var(--ink-soft); letter-spacing: .04em; text-transform: uppercase; margin-left: 4px; }
+.mark svg { width: 20px; height: 26px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 22px; border-radius: 999px; border: 0; font-weight: 700; cursor: pointer; text-decoration: none; transition: transform 140ms cubic-bezier(.23,1,.32,1); }
+.btn:active { transform: scale(.97); }
+.btn-ink { background: var(--ink); color: var(--ground); }
+.btn-accent { background: var(--accent); color: var(--accent-ink); }
+.btn-wa { background: var(--wa); color: var(--wa-ink); }
+.btn-ghost { background: transparent; box-shadow: inset 0 0 0 2px var(--line); }
+.btn-sm { min-height: 40px; padding: 0 16px; font-size: 15px; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.search { width: 100%; min-height: 52px; padding: 0 22px; border-radius: 999px; border: 2px solid var(--line); background: var(--card); margin-bottom: 16px; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+.stat { background: var(--card); border-radius: 20px; padding: 14px 16px; }
+.stat b { display: block; font: 700 32px/1 var(--display); }
+.stat span { font-size: 14px; color: var(--ink-soft); }
+.list { display: grid; gap: 10px; }
+.client { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center; background: var(--card); border-radius: 22px; padding: 16px 18px; text-decoration: none; color: inherit; border: 2px solid transparent; }
+.client:hover { border-color: var(--line); }
+.client h3 { font-size: 22px; }
+.client p { margin: 0; color: var(--ink-soft); font-size: 15px; grid-column: 1; }
+.pill { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 4px 12px; font-size: 14px; font-weight: 700; white-space: nowrap; grid-row: 1 / span 2; grid-column: 2; }
+.pill::before { content: ""; width: 8px; height: 14px; border-radius: 999px; background: currentColor; }
+.ok { background: var(--ok-bg); color: var(--ok); }
+.soon { background: var(--soon-bg); color: var(--accent-text); }
+.late { background: var(--late-bg); color: #8a2a0c; }
+.none { background: var(--ground-2); color: var(--ink-soft); }
+.empty { text-align: center; padding: 48px 16px; color: var(--ink-soft); }
+.empty h2 { color: var(--ink); margin-bottom: 8px; }
+.back { display: inline-flex; gap: 6px; color: var(--ink-soft); text-decoration: none; font-weight: 600; margin-bottom: 12px; }
+.panel { background: var(--card); border-radius: 26px; padding: 20px; margin-bottom: 14px; }
+.panel h1 { font-size: clamp(30px, 6vw, 44px); margin-bottom: 6px; }
+.meta { color: var(--ink-soft); margin: 0 0 14px; }
+.next { display: grid; grid-template-columns: auto 1fr; gap: 18px; align-items: center; }
+.tank { width: 64px; height: 112px; border-radius: 999px; border: 5px solid var(--ink); position: relative; overflow: hidden; background: var(--ground); }
+.tank i { position: absolute; inset: auto 0 0; background: var(--accent); transition: height 600ms cubic-bezier(.23,1,.32,1); }
+.tank.ok-t i { background: var(--ok); } .tank.late-t i { background: #8a2a0c; }
+.next h2 { font-size: 26px; }
+.next p { margin: 4px 0 0; color: var(--ink-soft); }
+.timeline { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+.mant { background: var(--card); border-radius: 26px; padding: 18px 20px; position: relative; }
+.mant header { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; flex-wrap: wrap; margin-bottom: 10px; }
+.mant h3 { font-size: 22px; }
+.checks { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; padding: 0; list-style: none; }
+.checks li { background: var(--ok-bg); color: var(--ok); border-radius: 999px; padding: 3px 12px; font-size: 14px; font-weight: 600; }
+.sarro { display: flex; gap: 4px; align-items: center; font-size: 15px; color: var(--ink-soft); margin-bottom: 10px; }
+.sarro i { width: 22px; height: 10px; border-radius: 999px; background: var(--ground-2); }
+.sarro i.on { background: var(--accent); }
+.photos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.photos figure { margin: 0; }
+.photos figcaption { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-soft); margin-bottom: 4px; }
+.thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 6px; }
+.thumbs img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 14px; cursor: zoom-in; display: block; }
+.notes { margin: 10px 0; white-space: pre-wrap; }
+dialog { border: 0; border-radius: 28px; padding: 0; width: min(560px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); background: var(--card); color: var(--ink); }
+dialog::backdrop { background: rgba(29,58,51,.55); }
+dialog form { padding: 22px; display: grid; gap: 14px; }
+dialog h2 { font-size: 28px; }
+label { display: grid; gap: 4px; font-weight: 600; font-size: 15px; }
+input:not([type=checkbox]):not([type=radio]), select, textarea { width: 100%; min-height: 48px; padding: 10px 14px; border-radius: 14px; border: 2px solid var(--line); background: #fff; font-size: 16px; }
+textarea { min-height: 88px; resize: vertical; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 8px; }
+legend { font-weight: 600; font-size: 15px; margin-bottom: 4px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chips label { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; border-radius: 999px; background: var(--ground); cursor: pointer; font-weight: 600; }
+.chips input { accent-color: var(--ink); width: 18px; height: 18px; }
+.chips label:has(input:checked) { background: var(--ok-bg); }
+.zoom { width: auto; max-width: calc(100vw - 24px); background: transparent; }
+.zoom img { display: block; max-width: 100%; max-height: calc(100dvh - 24px); border-radius: 20px; }
+.foot { margin-top: 28px; color: var(--ink-soft); font-size: 14px; }
+.foot .row { margin-top: 8px; }
+@media (max-width: 520px) { .stats b { font-size: 26px; } .two { grid-template-columns: 1fr; } .photos { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="mark" href="#"><svg viewBox="0 0 22 28" aria-hidden="true"><path d="M11 1C11 1 2 11.5 2 18a9 9 0 0 0 18 0C20 11.5 11 1 11 1Z" fill="none" stroke="#1d3a33" stroke-width="2.4"/><path d="M3.2 18h15.6a7.8 7.8 0 0 1-15.6 0Z" fill="#df6432"/></svg>calora<small>registro</small></a>
+    <button class="btn btn-accent btn-sm" id="addClient" type="button">+ Cliente</button>
+  </header>
+  <main id="app"></main>
+</div>
+
+<dialog id="dClient"><form method="dialog" id="fClient">
+  <h2 id="dClientTitle">Nuevo cliente</h2>
+  <label>Nombre<input name="nombre" required autocomplete="off"></label>
+  <div class="two">
+    <label>WhatsApp<input name="telefono" type="tel" placeholder="9 1234 5678" inputmode="tel"></label>
+    <label>Comuna<input name="comuna"></label>
+  </div>
+  <label>Dirección<input name="direccion"></label>
+  <div class="two">
+    <label>Marca del termo<input name="marca" placeholder="Splendid, Albin Trotter…"></label>
+    <label>Capacidad<select name="litros"><option>50 L</option><option selected>80 L</option><option>100 L</option><option>120 L</option><option>150 L</option><option>Otra</option></select></label>
+  </div>
+  <label>Instalación<select name="tipo"><option>Muro</option><option>Piso</option><option>Entretecho</option></select></label>
+  <div class="row"><button class="btn btn-ink" value="ok">Guardar</button><button class="btn btn-ghost" value="cancel" formnovalidate>Cancelar</button></div>
+</form></dialog>
+
+<dialog id="dMant"><form method="dialog" id="fMant">
+  <h2>Nueva mantención</h2>
+  <div class="two">
+    <label>Fecha<input name="fecha" type="date" required></label>
+    <label>Próxima en<select name="meses"><option value="6">6 meses</option><option value="12" selected>12 meses</option><option value="18">18 meses</option><option value="24">24 meses</option></select></label>
+  </div>
+  <fieldset><legend>Trabajo realizado</legend><div class="chips" id="checks"></div></fieldset>
+  <fieldset><legend>Sarro encontrado</legend><div class="chips">
+    <label><input type="radio" name="sarro" value="0">Nada</label>
+    <label><input type="radio" name="sarro" value="1" checked>Poco</label>
+    <label><input type="radio" name="sarro" value="2">Medio</label>
+    <label><input type="radio" name="sarro" value="3">Mucho</label>
+  </div></fieldset>
+  <div class="two">
+    <label>Fotos antes<input name="antes" type="file" accept="image/*" multiple></label>
+    <label>Fotos después<input name="despues" type="file" accept="image/*" multiple></label>
+  </div>
+  <label>Notas<textarea name="notas" placeholder="Estado del ánodo, presión, recomendaciones…"></textarea></label>
+  <div class="row"><button class="btn btn-ink" value="ok" id="saveMant">Guardar mantención</button><button class="btn btn-ghost" value="cancel" formnovalidate>Cancelar</button></div>
+</form></dialog>
+
+<dialog id="dZoom" class="zoom"><form method="dialog"><button style="all:unset;cursor:zoom-out" aria-label="Cerrar"><img id="zoomImg" alt=""></button></form></dialog>
+
+<script>
+const TRABAJOS = ["Vaciado completo", "Limpieza de sarro", "Cambio de ánodo", "Revisión de resistencia", "Revisión de termostato", "Válvula de seguridad"];
+const SARRO = ["Nada", "Poco", "Medio", "Mucho"];
+const $ = (s, el = document) => el.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+
+// shortcut: data lives in this device's IndexedDB only; use Exportar for backups, move to a shared backend (e.g. Supabase) if several técnicos need the same records.
+const dbp = new Promise((res, rej) => {
+  const r = indexedDB.open("calora-registro", 1);
+  r.onupgradeneeded = () => r.result.createObjectStore("clientes", { keyPath: "id" });
+  r.onsuccess = () => res(r.result);
+  r.onerror = () => rej(r.error);
+});
+const store = (mode, fn) => dbp.then((db) => new Promise((res, rej) => {
+  const t = db.transaction("clientes", mode); const req = fn(t.objectStore("clientes"));
+  t.oncomplete = () => res(req && req.result); t.onerror = () => rej(t.error);
+}));
+const all = () => store("readonly", (s) => s.getAll());
+const save = (c) => store("readwrite", (s) => s.put(c));
+const del = (id) => store("readwrite", (s) => s.delete(id));
+
+// dates as YYYY-MM-DD strings, compared at local noon to dodge DST edges
+const today = () => new Date().toLocaleDateString("sv");
+const parse = (d) => new Date(d + "T12:00:00");
+const addMonths = (d, m) => { const x = parse(d); const day = x.getDate(); x.setMonth(x.getMonth() + m); if (x.getDate() < day) x.setDate(0); return x.toLocaleDateString("sv"); };
+const daysTo = (d) => Math.round((parse(d) - parse(today())) / 864e5);
+const fmt = (d) => parse(d).toLocaleDateString("es-CL", { day: "numeric", month: "long", year: "numeric" });
+const last = (c) => c.mants[0];
+function status(c) {
+  if (!c.mants.length) return { cls: "none", txt: "Sin mantención", d: null };
+  const d = daysTo(last(c).proxima);
+  if (d < 0) return { cls: "late", txt: `Vencida hace ${-d} días`, d };
+  if (d <= 30) return { cls: "soon", txt: d === 0 ? "Toca hoy" : `En ${d} días`, d };
+  return { cls: "ok", txt: "Al día", d };
+}
+console.assert(addMonths("2026-01-31", 1) === "2026-02-28" && addMonths("2026-03-15", 12) === "2027-03-15", "addMonths");
+
+function waNumber(t) {
+  let n = String(t || "").replace(/\D/g, "");
+  if (n.length === 9 && n[0] === "9") n = "56" + n; // celular chileno sin código
+  return n;
+}
+const waLink = (c, msg) => "https://wa.me/" + waNumber(c.telefono) + "?text=" + encodeURIComponent(msg);
+function resumen(c, m) {
+  return `Hola ${c.nombre} 👋, te dejamos el registro de la mantención de tu termo (${c.litros}${c.marca ? ", " + c.marca : ""}) del ${fmt(m.fecha)}:\n\n` +
+    m.checks.map((x) => "✅ " + x).join("\n") +
+    `\nSarro encontrado: ${SARRO[m.sarro]}` + (m.notas ? `\n\n📝 ${m.notas}` : "") +
+    `\n\n📅 Próxima mantención: ${fmt(m.proxima)}.\n¡Gracias por confiar en Calora! 🔥`;
+}
+const recordatorio = (c) => `Hola ${c.nombre} 👋, te escribimos de Calora. Ya toca la mantención de tu termo ${c.litros} (la última fue el ${fmt(last(c).fecha)}). ¿Te agendamos una visita esta semana?`;
+
+async function shrink(file) {
+  const img = await createImageBitmap(file);
+  const k = Math.min(1, 1280 / Math.max(img.width, img.height));
+  const cv = document.createElement("canvas");
+  cv.width = Math.round(img.width * k); cv.height = Math.round(img.height * k);
+  cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height);
+  return cv.toDataURL("image/jpeg", 0.75);
+}
+
+let clients = [];
+async function load() { clients = (await all()).sort((a, b) => a.nombre.localeCompare(b.nombre, "es")); render(); }
+
+function render() {
+  const id = location.hash.match(/^#c\/(.+)/)?.[1];
+  const c = id && clients.find((x) => x.id === id);
+  c ? renderClient(c) : renderList();
+  window.scrollTo(0, 0);
+}
+
+function renderList(q = "") {
+  const st = clients.map(status);
+  const filt = clients.filter((c) => (c.nombre + " " + c.comuna + " " + c.telefono).toLowerCase().includes(q.toLowerCase()))
+    .sort((a, b) => (status(a).d ?? 1e9) - (status(b).d ?? 1e9)); // lo más urgente arriba
+  $("#app").innerHTML = clients.length ? `
+    <div class="stats">
+      <div class="stat"><b>${clients.length}</b><span>clientes</span></div>
+      <div class="stat"><b>${st.filter((s) => s.cls === "soon").length}</b><span>por vencer</span></div>
+      <div class="stat"><b>${st.filter((s) => s.cls === "late").length}</b><span>vencidas</span></div>
+    </div>
+    <input class="search" type="search" placeholder="Buscar por nombre, comuna o teléfono" value="${esc(q)}" aria-label="Buscar cliente">
+    <div class="list">${filt.map((c) => { const s = status(c); return `
+      <a class="client" href="#c/${c.id}"><h3>${esc(c.nombre)}</h3><span class="pill ${s.cls}">${s.txt}</span>
+      <p>${esc([c.comuna, c.litros, c.tipo].filter(Boolean).join(" · "))} · ${c.mants.length} mantención${c.mants.length === 1 ? "" : "es"}</p></a>`; }).join("") || `<p class="empty">Sin resultados.</p>`}</div>
+    ${footer()}` : `
+    <div class="empty"><h2>Tu registro está vacío</h2><p>Agrega a tu primer cliente y anota cada mantención con fotos de antes y después.</p><br>
+    <button class="btn btn-accent" type="button" onclick="openClient()">+ Agregar cliente</button></div>${footer()}`;
+  const s = $(".search");
+  if (s) s.oninput = () => { const pos = s.selectionStart; renderList(s.value); const n = $(".search"); n.focus(); n.setSelectionRange(pos, pos); };
+}
+
+const footer = () => `<div class="foot">Los datos se guardan solo en este dispositivo. Exporta un respaldo de vez en cuando.
+  <div class="row"><button class="btn btn-ghost btn-sm" type="button" onclick="exportar()">Exportar respaldo</button>
+  <label class="btn btn-ghost btn-sm" style="display:inline-flex">Importar<input type="file" accept="application/json" hidden onchange="importar(this.files[0])"></label></div></div>`;
+
+function renderClient(c) {
+  const s = status(c), m0 = last(c);
+  const pct = s.d == null ? 0 : Math.max(0, Math.min(100, (s.d / Math.max(1, daysTo(m0.proxima) - daysTo(m0.fecha))) * 100));
+  $("#app").innerHTML = `
+    <a class="back" href="#">← Clientes</a>
+    <section class="panel">
+      <h1>${esc(c.nombre)}</h1>
+      <p class="meta">${esc([c.direccion, c.comuna].filter(Boolean).join(", "))}<br>Termo ${esc([c.marca, c.litros, c.tipo].filter(Boolean).join(" · "))}${c.telefono ? " · " + esc(c.telefono) : ""}</p>
+      <div class="next">
+        <div class="tank ${s.cls}-t" aria-hidden="true"><i style="height:${pct}%"></i></div>
+        <div><h2>${m0 ? "Próxima: " + fmt(m0.proxima) : "Aún sin mantenciones"}</h2>
+        <p><span class="pill ${s.cls}" style="display:inline-flex">${s.txt}</span></p></div>
+      </div>
+      <div class="row" style="margin-top:16px">
+        <button class="btn btn-accent" type="button" onclick="openMant()">+ Mantención</button>
+        ${c.telefono && m0 && s.cls !== "ok" ? `<a class="btn btn-wa" target="_blank" rel="noopener" href="${esc(waLink(c, recordatorio(c)))}">Recordar por WhatsApp</a>` : ""}
+        <button class="btn btn-ghost btn-sm" type="button" onclick="openClient(true)">Editar</button>
+        <button class="btn btn-ghost btn-sm" type="button" onclick="borrarCliente()">Eliminar</button>
+      </div>
+    </section>
+    <ol class="timeline">${c.mants.map((m) => `
+      <li class="mant"><header><h3>${fmt(m.fecha)}</h3><span style="color:var(--ink-soft);font-size:15px">próxima ${fmt(m.proxima)}</span></header>
+        <ul class="checks">${m.checks.map((x) => `<li>✓ ${esc(x)}</li>`).join("")}</ul>
+        <div class="sarro">Sarro: ${[1, 2, 3].map((i) => `<i class="${i <= m.sarro ? "on" : ""}"></i>`).join("")} ${SARRO[m.sarro]}</div>
+        ${m.antes.length || m.despues.length ? `<div class="photos">
+          <figure><figcaption>Antes</figcaption><div class="thumbs">${m.antes.map((p) => `<img src="${esc(p)}" alt="Foto antes">`).join("") || "—"}</div></figure>
+          <figure><figcaption>Después</figcaption><div class="thumbs">${m.despues.map((p) => `<img src="${esc(p)}" alt="Foto después">`).join("") || "—"}</div></figure></div>` : ""}
+        ${m.notas ? `<p class="notes">${esc(m.notas)}</p>` : ""}
+        <div class="row" style="margin-top:12px">
+          ${c.telefono ? `<a class="btn btn-wa btn-sm" target="_blank" rel="noopener" href="${esc(waLink(c, resumen(c, m)))}">Enviar resumen</a>` : ""}
+          ${m.antes.length + m.despues.length && navigator.canShare ? `<button class="btn btn-ghost btn-sm" type="button" onclick="compartirFotos('${m.id}')">Compartir fotos</button>` : ""}
+          <button class="btn btn-ghost btn-sm" type="button" onclick="borrarMant('${m.id}')">Eliminar</button>
+        </div></li>`).join("")}</ol>`;
+}
+
+const current = () => clients.find((x) => "#c/" + x.id === location.hash);
+
+function openClient(edit) {
+  const f = $("#fClient"); f.reset(); f.dataset.id = edit ? current().id : "";
+  $("#dClientTitle").textContent = edit ? "Editar cliente" : "Nuevo cliente";
+  if (edit) for (const k of ["nombre", "telefono", "comuna", "direccion", "marca", "litros", "tipo"]) f.elements[k].value = current()[k] || "";
+  $("#dClient").returnValue = ""; $("#dClient").showModal();
+}
+$("#addClient").onclick = () => openClient(false);
+$("#dClient").onclose = async () => {
+  if ($("#dClient").returnValue !== "ok") return;
+  const f = $("#fClient"), v = Object.fromEntries(new FormData(f));
+  const old = clients.find((x) => x.id === f.dataset.id);
+  const c = { ...(old || { id: uid(), mants: [] }), ...v };
+  await save(c); location.hash = "#c/" + c.id; await load();
+};
+
+$("#checks").innerHTML = TRABAJOS.map((t, i) => `<label><input type="checkbox" name="checks" value="${t}" ${i < 3 ? "checked" : ""}>${t}</label>`).join("");
+function openMant() { const f = $("#fMant"); f.reset(); f.elements.fecha.value = today(); $("#dMant").showModal(); }
+$("#fMant").onsubmit = async (e) => {
+  if (e.submitter?.value !== "ok") return;
+  e.preventDefault();
+  const f = e.target, btn = $("#saveMant"); btn.disabled = true; btn.textContent = "Guardando…";
+  try {
+    const c = current(), fecha = f.elements.fecha.value;
+    const m = {
+      id: uid(), fecha, proxima: addMonths(fecha, +f.elements.meses.value),
+      checks: [...f.querySelectorAll("[name=checks]:checked")].map((x) => x.value),
+      sarro: +f.elements.sarro.value, notas: f.elements.notas.value.trim(),
+      antes: await Promise.all([...f.elements.antes.files].map(shrink)),
+      despues: await Promise.all([...f.elements.despues.files].map(shrink)),
+    };
+    c.mants = [m, ...c.mants].sort((a, b) => b.fecha.localeCompare(a.fecha));
+    await save(c); $("#dMant").close(); await load();
+  } catch (err) { alert("No se pudo guardar: " + err.message); }
+  finally { btn.disabled = false; btn.textContent = "Guardar mantención"; }
+};
+
+async function borrarMant(id) {
+  if (!confirm("¿Eliminar esta mantención y sus fotos?")) return;
+  const c = current(); c.mants = c.mants.filter((m) => m.id !== id); await save(c); await load();
+}
+async function borrarCliente() {
+  const c = current();
+  if (!confirm(`¿Eliminar a ${c.nombre} y todo su historial?`)) return;
+  await del(c.id); location.hash = ""; await load();
+}
+async function compartirFotos(id) {
+  const c = current(), m = c.mants.find((x) => x.id === id);
+  const files = await Promise.all([...m.antes.map((p, i) => ["antes-" + (i + 1), p]), ...m.despues.map((p, i) => ["despues-" + (i + 1), p])]
+    .map(async ([n, p]) => new File([await (await fetch(p)).blob()], `calora-${m.fecha}-${n}.jpg`, { type: "image/jpeg" })));
+  if (navigator.canShare({ files })) navigator.share({ files, text: resumen(c, m) }).catch(() => {});
+  else alert("Este dispositivo no permite compartir fotos.");
+}
+async function exportar() {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(await all())], { type: "application/json" }));
+  a.download = `calora-respaldo-${today()}.json`; a.click(); URL.revokeObjectURL(a.href);
+}
+async function importar(file) {
+  if (!file) return;
+  try {
+    const data = JSON.parse(await file.text());
+    if (!Array.isArray(data) || !data.every((c) => c && /^[a-z0-9]+$/.test(c.id) && typeof c.nombre === "string" && Array.isArray(c.mants) && c.mants.every((m) => /^[a-z0-9]+$/.test(m.id) && /^\d{4}-\d{2}-\d{2}$/.test(m.fecha) && /^\d{4}-\d{2}-\d{2}$/.test(m.proxima)))) throw new Error("archivo no válido");
+    if (!confirm(`Importar ${data.length} clientes? Los que ya existan se reemplazarán.`)) return;
+    for (const c of data) await save(c);
+    await load();
+  } catch (err) { alert("No se pudo importar: " + err.message); }
+}
+
+document.addEventListener("click", (e) => { if (e.target.matches(".thumbs img")) { $("#zoomImg").src = e.target.src; $("#dZoom").showModal(); } });
+addEventListener("hashchange", render);
+load();
+</script>
+</body>
+</html>
