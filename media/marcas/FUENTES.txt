@@ -1,0 +1,7 @@
+Logos de marcas de termos (marcas registradas de sus dueños; usar solo para indicar "atendemos estas marcas").
+rheem.svg       Wikimedia Commons, File:Rheem logo.svg
+midea.svg       Wikimedia Commons, File:Midea.svg
+electrolux.svg  Wikimedia Commons, File:Electrolux logo.svg  (Electrolux es dueña de Mademsa y Fensa)
+bosch.svg       simple-icons (npm), solo el símbolo, en negro
+Los .png son las mismas imágenes a 1600 px con fondo transparente.
+Faltan: Splendid, Albin Trotter, Ursus Trotter, Mademsa, Fensa, Sindelen, Ariston, Junkers, Thermor, Rinnai, Anwo, Kendal, Neckar, Equation.
