@@ -35,3 +35,14 @@ export function merge(a, b, now) {
 }
 
 export const mood = w => w >= 70 ? '¡Gordito y feliz!' : w >= 40 ? 'Contento' : w >= 15 ? 'Tiene hambre…' : 'Muy flaquito 😢';
+
+// Evoluciones según la racha (días seguidos alimentándolo).
+export const STAGES = [
+  { min: 0,  name: 'Semillita',  icon: '🌱', skin: ['#ffd3de', '#ffa3bb'] },
+  { min: 1,  name: 'Brotecito',  icon: '🌿', skin: ['#ffd6e2', '#ff97b6'] },
+  { min: 3,  name: 'Florecita',  icon: '🌸', skin: ['#ffdbe7', '#ff8db0'] },
+  { min: 7,  name: 'Enamorado',  icon: '🎀', skin: ['#ffd9ea', '#ff7ea9'] },
+  { min: 14, name: 'Estrellita', icon: '⭐', skin: ['#f1dcff', '#c9a0ff'] },
+  { min: 30, name: 'Mochi Real', icon: '👑', skin: ['#fff0c2', '#ffadc8'] },
+];
+export const stageOf = streak => STAGES.findLastIndex(s => streak >= s.min);

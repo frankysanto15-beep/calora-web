@@ -11,3 +11,6 @@ assert.equal(tick(s, t0 + 3 * D).streak, 0, 'saltarse un día rompe la racha');
 assert.equal(tap(fresh(t0), t0, 1000).weight, 100, 'máximo 100');
 assert.equal(merge(s, fresh(t0 + D), t0 + D).streak, 2, 'merge conserva la racha');
 console.log('ok');
+import { stageOf } from './pet.js';
+assert.deepEqual([0, 1, 2, 3, 6, 7, 13, 14, 29, 30, 99].map(stageOf), [0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5], 'etapas por racha');
+console.log('ok etapas');
