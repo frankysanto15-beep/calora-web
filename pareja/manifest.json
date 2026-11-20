@@ -1,0 +1,12 @@
+{
+  "name": "Nuestro Mochi",
+  "short_name": "Mochi",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#fff1f3",
+  "theme_color": "#ffe4ea",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

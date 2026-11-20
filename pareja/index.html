@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nuestro Mochi</title>
+<meta name="theme-color" content="#ffe4ea">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Mochi">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root {
+  --bg: #fff1f3; --card: #ffffff; --ink: #3b1d2a; --soft: #8a5a6b;
+  --pink: #ff6f91; --pink-2: #ffc2d1; --body: #ffb3c6; --body-dark: #f08aa6;
+  --ok: #2fb67c; --line: #f6d4dc;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #1f1218; --card: #2c1a22; --ink: #ffe8ee; --soft: #d6a5b4; --line: #4a2b37; color-scheme: dark;
+} }
+:root[data-theme="dark"] { --bg: #1f1218; --card: #2c1a22; --ink: #ffe8ee; --soft: #d6a5b4; --line: #4a2b37; color-scheme: dark; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font: 16px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif;
+  padding: max(16px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom)); }
+main { max-width: 460px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+h1 { font-size: 26px; margin: 4px 0 0; text-align: center; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 24px; padding: 18px; }
+.stats { display: flex; justify-content: space-between; gap: 8px; font-weight: 600; }
+.stats span { background: var(--bg); border-radius: 999px; padding: 6px 12px; }
+#pet { position: relative; display: grid; place-items: center; cursor: pointer; touch-action: manipulation;
+  user-select: none; -webkit-user-select: none; }
+#pet svg { width: min(100%, 280px); height: auto; aspect-ratio: 1; overflow: visible; }
+#bodyg { transform-origin: 100px 175px; transition: transform 90ms ease-out; }
+#pet.squish #bodyg { transform: scale(1.06, 0.92); }
+#body, #belly { transition: rx 600ms ease, ry 600ms ease; }
+.heart { position: absolute; pointer-events: none; font-size: 22px; animation: up 900ms ease-out forwards; }
+@keyframes up { to { transform: translateY(-90px) scale(1.4); opacity: 0; } }
+.mood { text-align: center; font-size: 20px; font-weight: 700; margin: 4px 0 2px; }
+.hint { text-align: center; color: var(--soft); margin: 0; font-size: 14px; }
+.bar { height: 12px; background: var(--bg); border-radius: 999px; overflow: hidden; margin-top: 10px; }
+.bar i { display: block; height: 100%; background: var(--pink); border-radius: inherit; transition: width 300ms; }
+.row { display: flex; gap: 8px; }
+input { flex: 1; min-width: 0; font: inherit; font-size: 16px; padding: 12px 14px; border-radius: 14px; border: 1px solid var(--line);
+  background: var(--bg); color: var(--ink); }
+button { font: inherit; font-weight: 700; border: 0; border-radius: 14px; padding: 12px 16px; background: var(--pink); color: #fff; cursor: pointer; }
+button:active { transform: scale(0.97); }
+button.ghost { background: var(--bg); color: var(--ink); border: 1px solid var(--line); }
+#status { color: var(--soft); margin: 10px 0; font-size: 14px; }
+#status.on { color: var(--ok); font-weight: 600; }
+#talk { width: 100%; height: 150px; border-radius: 32px; font-size: 22px; touch-action: none; user-select: none; -webkit-user-select: none;
+  -webkit-touch-callout: none; transition: background-color 120ms, transform 120ms; }
+#talk:disabled { opacity: .4; }
+#talk.live { background: #e5375f; transform: scale(0.98); }
+#incoming { text-align: center; font-weight: 700; color: var(--pink); min-height: 1.4em; margin: 10px 0 0; }
+.opts { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.opts button { flex: 1; font-size: 14px; padding: 10px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Nuestro Mochi 💞</h1>
+
+  <section class="card">
+    <div class="stats"><span id="streak">🔥 0 días</span><span id="today">0/50 hoy</span></div>
+    <div id="pet" role="button" aria-label="Dale tap para alimentar a Mochi">
+      <svg viewBox="0 0 200 200" aria-hidden="true">
+        <ellipse cx="100" cy="182" id="shadow" rx="60" ry="8" fill="#000" opacity=".08"/>
+        <g id="bodyg">
+          <path d="M100 52 q-6 -22 8 -30 q4 14 -8 30" fill="#7ccf8f"/>
+          <ellipse id="body" cx="100" cy="120" rx="70" ry="62" fill="var(--body)"/>
+          <ellipse id="belly" cx="100" cy="135" rx="42" ry="34" fill="#fff" opacity=".45"/>
+          <circle id="eyeL" cx="80" cy="108" r="7" fill="#3b1d2a"/>
+          <circle id="eyeR" cx="120" cy="108" r="7" fill="#3b1d2a"/>
+          <path id="brows" d="" stroke="#3b1d2a" stroke-width="3" stroke-linecap="round" fill="none"/>
+          <circle id="cheekL" cx="66" cy="124" r="9" fill="var(--pink)"/>
+          <circle id="cheekR" cx="134" cy="124" r="9" fill="var(--pink)"/>
+          <path id="mouth" d="" stroke="#3b1d2a" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+        </g>
+      </svg>
+    </div>
+    <p class="mood" id="mood"></p>
+    <p class="hint">Tap tap para alimentarlo. Si no lo alimentan, se pone flaquito.</p>
+    <div class="bar" aria-label="Peso"><i id="weight"></i></div>
+  </section>
+
+  <section class="card">
+    <h2 style="margin:0 0 10px;font-size:20px">📻 Radio 1 a 1</h2>
+    <div class="row">
+      <input id="code" placeholder="Código secreto de los dos" autocomplete="off" autocapitalize="off">
+      <button id="connect">Conectar</button>
+    </div>
+    <p id="status">Usen el mismo código en los dos teléfonos.</p>
+    <button id="talk" disabled>Mantén para hablar</button>
+    <p id="incoming"></p>
+    <div class="opts">
+      <button class="ghost" id="wake">☀️ Pantalla siempre encendida: no</button>
+    </div>
+  </section>
+</main>
+<audio id="rx" autoplay playsinline></audio>
+
+<script src="peerjs.min.js"></script>
+<script type="module">
+import { fresh, tick, tap, merge, mood, DAILY_GOAL } from './pet.js';
+const $ = id => document.getElementById(id);
+
+/* ---------- Mascota ---------- */
+let state;
+try { state = JSON.parse(localStorage.getItem('mochi')); } catch {}
+state = state ? tick(state, Date.now()) : fresh(Date.now());
+const save = () => { try { localStorage.setItem('mochi', JSON.stringify(state)); } catch {} };
+
+function render() {
+  const w = state.weight, k = w / 100;
+  $('body').setAttribute('rx', 34 + 56 * k);       // flaco 34 → gordo 90
+  $('body').setAttribute('ry', 66 - 8 * k);
+  $('belly').setAttribute('rx', 16 + 34 * k);
+  $('belly').setAttribute('ry', 26 + 10 * k);
+  const ex = 14 + 10 * k;
+  $('eyeL').setAttribute('cx', 100 - ex); $('eyeR').setAttribute('cx', 100 + ex);
+  $('cheekL').setAttribute('cx', 100 - ex - 12); $('cheekR').setAttribute('cx', 100 + ex + 12);
+  for (const c of ['cheekL', 'cheekR']) $(c).setAttribute('opacity', 0.15 + 0.6 * k);
+  $('shadow').setAttribute('rx', 30 + 50 * k);
+  const curve = (k - 0.4) * 30;                      // sonrisa ↔ tristeza
+  $('mouth').setAttribute('d', `M88 140 Q100 ${140 + curve} 112 140`);
+  $('brows').setAttribute('d', w < 30 ? `M${100 - ex - 8} 98 L${100 - ex + 6} 92 M${100 + ex + 8} 98 L${100 + ex - 6} 92` : '');
+  $('mood').textContent = mood(w);
+  $('weight').style.width = w + '%';
+  $('streak').textContent = `🔥 ${state.streak} ${state.streak === 1 ? 'día' : 'días'}`;
+  $('today').textContent = state.todayTaps >= DAILY_GOAL ? '✅ Alimentado hoy' : `${state.todayTaps}/${DAILY_GOAL} hoy`;
+}
+
+function feed(fromPartner) {
+  state = tap(state, Date.now()); save(); render();
+  const pet = $('pet');
+  pet.classList.remove('squish'); void pet.offsetWidth; pet.classList.add('squish');
+  setTimeout(() => pet.classList.remove('squish'), 100);
+  const h = document.createElement('span');
+  h.className = 'heart'; h.textContent = fromPartner ? '💌' : '💗';
+  h.style.left = 30 + Math.random() * 40 + '%'; h.style.top = '40%';
+  pet.append(h); setTimeout(() => h.remove(), 900);
+}
+$('pet').addEventListener('pointerdown', () => {
+  feed(false); navigator.vibrate?.(8);
+  if (conn?.open) conn.send({ t: 'tap' });
+});
+setInterval(() => { state = tick(state, Date.now()); save(); render(); }, 30000);
+render();
+
+/* ---------- Radio (WebRTC con PeerJS) ---------- */
+// Los dos usan el mismo código: el primero toma "-1", el segundo "-2" y llama al primero.
+let peer, conn, mic, code, dialer;
+const status = (txt, on) => { $('status').textContent = txt; $('status').classList.toggle('on', !!on); };
+const setMic = on => mic?.getAudioTracks().forEach(t => t.enabled = on);
+$('code').value = localStorage.getItem('mochi-code') || '';
+
+$('connect').onclick = async () => {
+  code = $('code').value.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+  if (code.length < 4) return status('El código necesita al menos 4 letras o números.');
+  try { localStorage.setItem('mochi-code', code); } catch {}
+  $('rx').play().catch(() => {});                     // desbloquea el audio con este toque
+  try {
+    mic ??= await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
+  } catch { return status('Necesito permiso del micrófono para la radio.'); }
+  setMic(false);
+  start(1);
+  mediaSession();
+};
+
+function start(n) {
+  clearInterval(dialer); peer?.destroy();
+  status('Conectando…');
+  peer = new Peer(`mochi-radio-${code}-${n}`);
+  peer.on('open', () => {
+    status('Esperando a tu amor… 💭');
+    if (n === 2) { dial(); dialer = setInterval(() => { if (!conn?.open) dial(); }, 4000); }
+  });
+  peer.on('error', e => {
+    if (e.type === 'unavailable-id') return n === 1 ? start(2) : setTimeout(() => start(1), 3000);
+    if (e.type === 'peer-unavailable') return;          // aún no llega; el dialer reintenta
+    status('Problema de conexión (' + e.type + '), reintentando…');
+    setTimeout(() => start(n), 3000);
+  });
+  peer.on('disconnected', () => peer.reconnect());
+  peer.on('call', c => { c.answer(mic); bindCall(c); });
+  peer.on('connection', bindConn);
+}
+function dial() {
+  const other = `mochi-radio-${code}-1`;
+  bindConn(peer.connect(other, { reliable: true }));
+  bindCall(peer.call(other, mic));
+}
+function bindCall(c) {
+  c.on('stream', s => { $('rx').srcObject = s; $('rx').play().catch(() => {}); });
+}
+function bindConn(c) {
+  c.on('open', () => {
+    conn = c; status('Conectados 💞 La radio funciona aunque la pantalla se apague (deja la app abierta).', true);
+    $('talk').disabled = false; c.send({ t: 'state', s: state });
+  });
+  c.on('data', d => {
+    if (d.t === 'tap') feed(true);
+    if (d.t === 'state') { state = merge(state, d.s, Date.now()); save(); render(); }
+    if (d.t === 'talk') { $('incoming').textContent = d.on ? '🎙️ Tu amor está hablando…' : ''; if (d.on) navigator.vibrate?.(40); }
+  });
+  c.on('close', () => { if (conn === c) { conn = null; $('talk').disabled = true; $('incoming').textContent = ''; status('Se desconectó, esperando… 💭'); } });
+}
+
+// Mantener para hablar: el micrófono ya está conectado, solo se activa → sin demora.
+const talk = on => {
+  if (!conn?.open) return;
+  setMic(on); $('talk').classList.toggle('live', on);
+  $('talk').textContent = on ? '🔴 Hablando…' : 'Mantén para hablar';
+  conn.send({ t: 'talk', on }); navigator.vibrate?.(15);
+};
+const btn = $('talk');
+btn.addEventListener('pointerdown', e => { btn.setPointerCapture(e.pointerId); talk(true); });
+for (const ev of ['pointerup', 'pointercancel']) btn.addEventListener(ev, () => talk(false));
+btn.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('keydown', e => { if (e.code === 'Space' && !e.repeat && e.target === document.body) talk(true); });
+document.addEventListener('keyup', e => { if (e.code === 'Space') talk(false); });
+
+// Controles en la pantalla de bloqueo / notificación del teléfono.
+function mediaSession() {
+  if (!('mediaSession' in navigator)) return;
+  navigator.mediaSession.metadata = new MediaMetadata({ title: 'Radio con mi amor 💞', artist: 'Nuestro Mochi',
+    artwork: [{ src: 'icon-512.png', sizes: '512x512', type: 'image/png' }] });
+  navigator.mediaSession.setActionHandler('play', () => $('rx').play());
+  navigator.mediaSession.setActionHandler('pause', () => $('rx').play()); // no dejar que se pause la radio
+}
+
+// Pantalla siempre encendida (opcional, gasta batería). El sistema la suelta al salir de la app; se reactiva al volver.
+let lock = null, wantWake = false;
+const label = () => $('wake').textContent = `☀️ Pantalla siempre encendida: ${wantWake ? 'sí' : 'no'}`;
+async function grabWake() {
+  try { lock = await navigator.wakeLock.request('screen'); lock.onrelease = () => { lock = null; }; }
+  catch { wantWake = false; label(); alert('Tu navegador no permite mantener la pantalla encendida.'); }
+}
+$('wake').onclick = () => { wantWake = !wantWake; label(); wantWake ? grabWake() : lock?.release(); };
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible') return;
+  state = tick(state, Date.now()); render();
+  if (wantWake && !lock) grabWake();
+});
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+</script>
+</body>
+</html>

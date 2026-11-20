@@ -1,0 +1,13 @@
+import assert from 'node:assert';
+import { fresh, tick, tap, merge, DAILY_GOAL } from './pet.js';
+const H = 36e5, D = 24 * H, t0 = new Date(2026, 0, 10, 12).getTime();
+let s = fresh(t0);
+assert.equal(Math.round(tick(s, t0 + 10 * H).weight), 40, 'adelgaza 2/hora');
+assert.equal(tick(s, t0 + 100 * H).weight, 0, 'no baja de 0');
+s = tap(s, t0, DAILY_GOAL); assert.equal(s.streak, 1, 'meta diaria = racha 1');
+s = tap(s, t0 + 1, 10); assert.equal(s.streak, 1, 'no suma dos veces el mismo día');
+s = tap(s, t0 + D, DAILY_GOAL); assert.equal(s.streak, 2, 'día siguiente suma');
+assert.equal(tick(s, t0 + 3 * D).streak, 0, 'saltarse un día rompe la racha');
+assert.equal(tap(fresh(t0), t0, 1000).weight, 100, 'máximo 100');
+assert.equal(merge(s, fresh(t0 + D), t0 + D).streak, 2, 'merge conserva la racha');
+console.log('ok');
