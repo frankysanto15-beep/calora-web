@@ -38,11 +38,11 @@ export const mood = w => w >= 70 ? '¡Gordito y feliz!' : w >= 40 ? 'Contento' :
 
 // Evoluciones según la racha (días seguidos alimentándolo).
 export const STAGES = [
-  { min: 0,  name: 'Semillita',  icon: '🌱', skin: ['#ffd3de', '#ffa3bb'] },
-  { min: 1,  name: 'Brotecito',  icon: '🌿', skin: ['#ffd6e2', '#ff97b6'] },
-  { min: 3,  name: 'Florecita',  icon: '🌸', skin: ['#ffdbe7', '#ff8db0'] },
-  { min: 7,  name: 'Enamorado',  icon: '🎀', skin: ['#ffd9ea', '#ff7ea9'] },
-  { min: 14, name: 'Estrellita', icon: '⭐', skin: ['#f1dcff', '#c9a0ff'] },
-  { min: 30, name: 'Mochi Real', icon: '👑', skin: ['#fff0c2', '#ffadc8'] },
+  { min: 0,  name: 'Semillita',  icon: '🌱', skin: { rosa: ['#ffd3de', '#ffa3bb'], oceano: ['#d4f1ff', '#93d2f2'] } },
+  { min: 1,  name: 'Brotecito',  icon: '🌿', skin: { rosa: ['#ffd6e2', '#ff97b6'], oceano: ['#d0f4ec', '#7fd3c3'] } },
+  { min: 3,  name: 'Florecita',  icon: '🌼', skin: { rosa: ['#ffdbe7', '#ff8db0'], oceano: ['#d3eef8', '#6fc0de'] } },
+  { min: 7,  name: 'Melómano',   icon: '🎧', skin: { rosa: ['#ffd9ea', '#ff7ea9'], oceano: ['#d2e6ff', '#6ca6ee'] } },
+  { min: 14, name: 'Estrella',   icon: '⭐', skin: { rosa: ['#f1dcff', '#c9a0ff'], oceano: ['#e2dcff', '#a497ff'] } },
+  { min: 30, name: 'Mochi Real', icon: '👑', skin: { rosa: ['#fff0c2', '#ffadc8'], oceano: ['#fff0c2', '#f5c463'] } },
 ];
 export const stageOf = streak => STAGES.findLastIndex(s => streak >= s.min);
