@@ -1,0 +1,971 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lucho Car Wash</title>
+<link rel="icon" href="logo.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+/* ===== COLORES DE MARCA: cambia solo estas variables cuando llegue el logo ===== */
+:root {
+  --brand: #0097fe;        /* azul Lucho */
+  --brand-2: #38c2ff;      /* agua */
+  --brand-deep: #121317;   /* negro del escudo */
+  --accent: #ffe81a;       /* amarillo Lucho */
+  --accent-ink: #121317;
+  --bg: #eef6ff;
+  --card: #ffffff;
+  --ink: #0b1b33;
+  --ink-soft: #52627a;
+  --line: #d9e6f5;
+  --ok: #16b67a;
+  --warn: #ff9f1a;
+  --bad: #f0475e;
+  --foam: rgba(255,255,255,.85);
+  --radius: 20px;
+  --shadow: 0 10px 30px -12px rgba(10,60,140,.25);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --display: "Baloo 2", system-ui, sans-serif;
+  --body: "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { background: var(--bg); color: var(--ink); font: 16px/1.5 var(--body); overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
+h1, h2, h3 { font-family: var(--display); line-height: 1.1; margin: 0; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+/* ===== Fondo de burbujas (decorativo) ===== */
+#bubbles { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.bubble { position: absolute; bottom: -60px; border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #fff 0 12%, rgba(255,255,255,.35) 13% 45%, rgba(20,200,255,.18) 70%, rgba(10,108,255,.10));
+  border: 1px solid rgba(255,255,255,.7); box-shadow: inset -3px -4px 8px rgba(10,108,255,.12);
+  animation: rise linear forwards; }
+@keyframes rise {
+  0% { transform: translate3d(0,0,0); opacity: 0; }
+  10% { opacity: .9; }
+  50% { transform: translate3d(var(--dx), -55vh, 0); }
+  100% { transform: translate3d(calc(var(--dx) * -1), -115vh, 0); opacity: 0; }
+}
+
+/* ===== Layout ===== */
+.app { position: relative; z-index: 1; display: grid; grid-template-columns: 270px 1fr; min-height: 100vh; min-height: 100dvh; }
+.side { position: sticky; top: 0; height: 100vh; height: 100dvh; background: linear-gradient(170deg, var(--brand-deep) 0 55%, #0b3d6e 85%, var(--brand)); color: #fff; padding: 22px 16px; display: flex; flex-direction: column; gap: 18px; overflow: hidden; }
+.logo { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; padding: 4px 8px; }
+.logo img { width: 132px; height: 132px; flex: none; border-radius: 28px; filter: drop-shadow(0 8px 18px rgba(0,151,254,.35)); }
+.logo b { font: 800 20px/1.1 var(--display); display: block; color: var(--accent); }
+.logo small { opacity: .75; font-size: 13px; }
+.nav { display: flex; flex-direction: column; gap: 6px; position: relative; z-index: 1; }
+.nav button { display: grid; grid-template-columns: 40px 1fr; align-items: center; gap: 10px; text-align: left; border: 0; background: transparent; color: #fff; padding: 10px 12px; border-radius: 16px; cursor: pointer; transition: background-color 180ms ease, transform 140ms var(--ease-out); }
+.nav button:active { transform: scale(.97); }
+.nav .ico { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: rgba(255,255,255,.1); font-size: 20px; transition: background-color 180ms ease; }
+.nav b { display: block; font-weight: 800; }
+.nav small { display: block; opacity: .7; font-size: 12.5px; line-height: 1.25; }
+.nav button[aria-current="page"] { background: rgba(255,255,255,.16); }
+.nav button[aria-current="page"] .ico { background: var(--accent); }
+.nav button[aria-current="page"] { box-shadow: inset 3px 0 0 var(--accent); }
+@media (hover: hover) and (pointer: fine) { .nav button:hover { background: rgba(255,255,255,.1); } }
+.side .waves { position: absolute; left: 0; right: 0; bottom: 0; height: 120px; pointer-events: none; }
+.side .waves svg { position: absolute; bottom: 0; width: 200%; height: 100%; animation: wave 9s linear infinite; }
+.side .waves svg + svg { animation-duration: 14s; opacity: .5; }
+@keyframes wave { to { transform: translateX(-50%); } }
+.side-foot { margin-top: auto; position: relative; z-index: 1; display: flex; gap: 8px; }
+.chip-btn { border: 0; background: rgba(255,255,255,.14); color: #fff; border-radius: 999px; padding: 8px 14px; cursor: pointer; font-weight: 700; font-size: 14px; }
+
+.main { padding: 26px clamp(16px, 3vw, 40px) 120px; min-width: 0; }
+.top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 22px; }
+.crumb { font-size: 13px; color: var(--ink-soft); font-weight: 700; letter-spacing: .02em; }
+.crumb span { color: var(--brand); }
+.top h1 { font-size: clamp(28px, 3.4vw, 40px); }
+.hint { display: flex; gap: 10px; align-items: flex-start; background: #fff8de; border: 1px solid #ffe7a1; color: #5b4500; padding: 10px 14px; border-radius: 14px; font-size: 14.5px; margin-top: 10px; max-width: 720px; }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; padding: 0 20px; border-radius: 999px; border: 0; cursor: pointer; font-weight: 800; position: relative; overflow: hidden; transition: transform 140ms var(--ease-out), background-color 180ms ease, box-shadow 180ms ease; }
+.btn:active { transform: scale(.97); }
+.btn-primary { background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: #fff; box-shadow: 0 8px 20px -8px var(--brand); }
+.btn-accent { background: var(--accent); color: var(--accent-ink); }
+.btn-ghost { background: #fff; color: var(--ink); border: 1.5px solid var(--line); }
+.btn-wa { background: #25d366; color: #05361b; }
+.btn-sm { min-height: 36px; padding: 0 14px; font-size: 14px; }
+.btn-danger { background: #ffe8eb; color: var(--bad); }
+
+/* page transition: subtle, these change tens of times a day */
+.page { animation: pageIn 220ms var(--ease-out); }
+@keyframes pageIn { from { opacity: 0; transform: translateY(8px); } }
+
+.grid { display: grid; gap: 18px; }
+.kpis { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+.card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; border: 1px solid var(--line); min-width: 0; }
+.card h3 { font-size: 20px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.kpi { position: relative; overflow: hidden; }
+.kpi .lbl { color: var(--ink-soft); font-weight: 700; font-size: 14px; }
+.kpi .val { font: 800 34px/1.1 var(--display); margin-top: 4px; font-variant-numeric: tabular-nums; }
+.kpi .em { position: absolute; right: 14px; top: 12px; font-size: 30px; opacity: .9; }
+.kpi::after { content: ""; position: absolute; left: -10%; right: -10%; bottom: -36px; height: 60px; background: var(--kc, var(--brand-2)); opacity: .12; border-radius: 45%; animation: slosh 6s ease-in-out infinite alternate; }
+@keyframes slosh { to { transform: translateX(6%) rotate(3deg); } }
+.two { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); }
+.quick { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+.qa { border: 0; cursor: pointer; text-align: left; border-radius: 18px; padding: 16px; color: #fff; background: linear-gradient(135deg, var(--c1), var(--c2)); box-shadow: var(--shadow); transition: transform 160ms var(--ease-out); position: relative; overflow: hidden; }
+.qa:active { transform: scale(.97); }
+@media (hover: hover) and (pointer: fine) { .qa:hover { transform: translateY(-3px); } }
+.qa .e { font-size: 28px; }
+.qa b { display: block; font: 800 18px/1.2 var(--display); margin-top: 6px; }
+.qa small { opacity: .9; }
+
+/* lists */
+.list { display: flex; flex-direction: column; gap: 10px; }
+.row { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 16px; background: #f6faff; border: 1px solid var(--line); flex-wrap: wrap; }
+.row .av { width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; font-size: 22px; background: #e2efff; flex: none; }
+.row .info { flex: 1 1 180px; min-width: 0; }
+.row .info b { display: block; overflow-wrap: anywhere; }
+.row .info small { color: var(--ink-soft); display: block; overflow-wrap: anywhere; }
+.row .acts { display: flex; gap: 6px; flex-wrap: wrap; }
+.tag { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 800; padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+.st-pendiente { background: #eef1f6; color: #4a5568; }
+.st-lavando { background: #dff4ff; color: #0569a8; }
+.st-listo { background: #fff4d1; color: #8a5a00; }
+.st-entregado { background: #dcf8ec; color: #0b7a50; }
+.st-cancelado { background: #ffe8eb; color: var(--bad); }
+.empty { text-align: center; padding: 28px 12px; color: var(--ink-soft); }
+.empty .e { font-size: 44px; display: block; margin-bottom: 6px; }
+
+/* wash in progress: foam on the row */
+.row.washing { position: relative; overflow: hidden; background: linear-gradient(90deg, #e6f7ff, #f4fbff); border-color: #b8e6ff; }
+.row.washing .av { animation: shake 1.2s ease-in-out infinite; }
+@keyframes shake { 50% { transform: rotate(-6deg) translateY(-1px); } }
+.row.washing::before { content: ""; position: absolute; inset: auto 0 0 0; height: 4px; background: linear-gradient(90deg, var(--brand), var(--brand-2), var(--brand)); background-size: 200% 100%; animation: flow 1.6s linear infinite; }
+@keyframes flow { to { background-position: -200% 0; } }
+.suds { position: absolute; right: 10px; bottom: -6px; display: flex; gap: 2px; pointer-events: none; }
+.suds i { width: 12px; height: 12px; border-radius: 50%; background: #fff; border: 1px solid #cdeeff; animation: sud 1.8s ease-in-out infinite; }
+.suds i:nth-child(2) { width: 16px; height: 16px; animation-delay: .3s; }
+.suds i:nth-child(3) { animation-delay: .6s; }
+@keyframes sud { 50% { transform: translateY(-8px) scale(1.1); } }
+
+/* chart */
+.chart { display: flex; align-items: flex-end; gap: 10px; height: 190px; padding-top: 10px; }
+.bar { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; min-width: 0; }
+.bar .col { width: 100%; max-width: 46px; border-radius: 12px 12px 6px 6px; background: linear-gradient(180deg, var(--brand-2), var(--brand)); transform-origin: bottom; animation: grow 600ms var(--ease-out) backwards; position: relative; }
+.bar .col.neg { background: linear-gradient(180deg, #ff8a9b, var(--bad)); }
+.bar .col:hover::after { content: attr(data-v); position: absolute; bottom: 100%; left: 50%; transform: translate(-50%, -4px); background: var(--ink); color: #fff; font-size: 12px; padding: 3px 7px; border-radius: 8px; white-space: nowrap; }
+@keyframes grow { from { transform: scaleY(.05); } }
+.bar span { font-size: 12px; color: var(--ink-soft); font-weight: 700; }
+.legend { display: flex; gap: 14px; font-size: 13px; color: var(--ink-soft); font-weight: 700; margin-top: 8px; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; }
+
+/* week strip */
+.week { display: grid; grid-template-columns: auto repeat(7, minmax(0,1fr)) auto; gap: 8px; align-items: stretch; margin-bottom: 16px; }
+.day { border: 1.5px solid var(--line); background: #fff; border-radius: 16px; padding: 8px 4px; cursor: pointer; text-align: center; transition: background-color 160ms ease, border-color 160ms ease, transform 140ms var(--ease-out); }
+.day:active { transform: scale(.96); }
+.day small { display: block; color: var(--ink-soft); font-weight: 700; font-size: 12px; text-transform: capitalize; }
+.day b { font: 800 22px/1.1 var(--display); }
+.day .dots { display: flex; gap: 3px; justify-content: center; min-height: 6px; margin-top: 3px; }
+.day .dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--brand-2); }
+.day[aria-pressed="true"] { background: var(--brand); border-color: var(--brand); color: #fff; }
+.day[aria-pressed="true"] small { color: #dbeaff; }
+.day[aria-pressed="true"] .dots i { background: var(--accent); }
+.day.today { border-color: var(--accent); }
+.arrow { border: 0; background: #fff; border-radius: 14px; width: 40px; cursor: pointer; font-size: 18px; border: 1.5px solid var(--line); }
+
+/* forms / modal */
+dialog { border: 0; padding: 0; border-radius: 26px; width: min(620px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); box-shadow: 0 30px 80px -20px rgba(6,38,92,.5); color: var(--ink); }
+dialog::backdrop { background: rgba(6,38,92,.45); backdrop-filter: blur(3px); }
+dialog[open] { animation: modalIn 260ms var(--ease-out); }
+@keyframes modalIn { from { opacity: 0; transform: scale(.96) translateY(10px); } }
+.m-head { padding: 20px 22px 12px; background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: #fff; position: relative; overflow: hidden; }
+.m-head h2 { font-size: 26px; }
+.m-head p { margin: 4px 0 0; opacity: .9; font-size: 14.5px; }
+.m-head .x { position: absolute; right: 14px; top: 14px; border: 0; background: rgba(255,255,255,.2); color: #fff; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 18px; }
+.m-body { padding: 18px 22px; overflow: auto; max-height: calc(100dvh - 220px); }
+.m-foot { padding: 14px 22px 20px; display: flex; justify-content: space-between; gap: 10px; border-top: 1px solid var(--line); flex-wrap: wrap; }
+label.f { display: block; font-weight: 800; font-size: 14px; margin-bottom: 12px; }
+label.f small { font-weight: 600; color: var(--ink-soft); }
+.f input, .f select, .f textarea { display: block; width: 100%; margin-top: 5px; padding: 12px 14px; border-radius: 14px; border: 1.5px solid var(--line); background: #f8fbff; font-size: 16px; transition: border-color 160ms ease, box-shadow 160ms ease; }
+.f input:focus, .f select:focus, .f textarea:focus { outline: 0; border-color: var(--brand); box-shadow: 0 0 0 4px rgba(10,108,255,.15); }
+.f textarea { min-height: 120px; resize: vertical; }
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+
+/* wizard: a car rolling through the wash tunnel */
+.tunnel { position: relative; height: 66px; margin: 2px 0 16px; border-radius: 16px; background: #eaf4ff; overflow: hidden; }
+.tunnel .steps { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(3, 1fr); }
+.tunnel .steps span { display: grid; place-items: start center; padding-top: 6px; font-weight: 800; font-size: 13px; color: var(--ink-soft); border-right: 2px dashed #cfe3fb; }
+.tunnel .steps span:last-child { border: 0; }
+.tunnel .steps span.on { color: var(--brand); }
+.tunnel .car { position: absolute; top: 24px; left: 0; width: calc(100% / 3); display: grid; place-items: center; font-size: 30px; transition: transform 450ms var(--ease-in-out); }
+.tunnel .car::after { content: "🫧"; position: absolute; font-size: 16px; top: -2px; right: 30%; animation: sud 1.4s ease-in-out infinite; }
+.pick { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+.pick button { text-align: left; border: 2px solid var(--line); background: #fff; border-radius: 16px; padding: 12px; cursor: pointer; transition: border-color 160ms ease, transform 140ms var(--ease-out), background-color 160ms ease; }
+.pick button:active { transform: scale(.97); }
+.pick button[aria-pressed="true"] { border-color: var(--brand); background: #eef6ff; }
+.pick .e { font-size: 26px; }
+.pick b { display: block; }
+.pick small { color: var(--ink-soft); }
+.slots { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.slots button { border: 1.5px solid var(--line); background: #fff; border-radius: 12px; padding: 8px 12px; cursor: pointer; font-weight: 800; }
+.slots button[aria-pressed="true"] { background: var(--brand); color: #fff; border-color: var(--brand); }
+.slots button:disabled { opacity: .35; text-decoration: line-through; cursor: not-allowed; }
+.search { width: 100%; padding: 12px 14px; border-radius: 14px; border: 1.5px solid var(--line); margin-bottom: 10px; font-size: 16px; background: #fff; }
+
+/* tabs */
+.tabs { display: inline-flex; background: #fff; border: 1.5px solid var(--line); border-radius: 999px; padding: 4px; gap: 4px; margin-bottom: 14px; flex-wrap: wrap; }
+.tabs button { border: 0; background: transparent; padding: 8px 16px; border-radius: 999px; cursor: pointer; font-weight: 800; color: var(--ink-soft); transition: background-color 160ms ease, color 160ms ease; }
+.tabs button[aria-selected="true"] { background: var(--brand); color: #fff; }
+
+/* toast */
+#toasts { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 50; display: flex; flex-direction: column; gap: 8px; align-items: center; pointer-events: none; }
+.toast { background: var(--ink); color: #fff; padding: 12px 18px; border-radius: 999px; font-weight: 700; box-shadow: var(--shadow); transition: transform 240ms var(--ease-out), opacity 240ms var(--ease-out); }
+.toast.enter, .toast.leave { opacity: 0; transform: translateY(100%); }
+
+/* splash burst on save */
+.burst { position: fixed; pointer-events: none; z-index: 60; width: 0; height: 0; }
+.burst i { position: absolute; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #fff, rgba(20,200,255,.5)); border: 1px solid #fff; animation: pop 700ms var(--ease-out) forwards; }
+@keyframes pop { from { transform: translate(-50%,-50%) scale(.4); opacity: 1; } to { transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) scale(1); opacity: 0; } }
+
+/* floating schedule button: always reachable */
+.fab { position: fixed; right: 22px; bottom: 22px; z-index: 20; min-height: 60px; padding: 0 24px; font-size: 17px; }
+.fab .drop { display: inline-block; animation: drip 2.4s ease-in-out infinite; }
+@keyframes drip { 0%, 70%, 100% { transform: translateY(0); } 80% { transform: translateY(3px); } }
+
+.mobile-nav { display: none; }
+.money-in { color: var(--ok); font-weight: 800; }
+.money-out { color: var(--bad); font-weight: 800; }
+.muted { color: var(--ink-soft); }
+.spacer { height: 14px; }
+.help-steps { margin: 0; padding-left: 20px; }
+.help-steps li { margin-bottom: 6px; }
+
+@media (max-width: 980px) { .two { grid-template-columns: 1fr; } }
+@media (max-width: 820px) {
+  .app { grid-template-columns: 1fr; }
+  .side { display: none; }
+  .main { padding: 16px 16px 150px; }
+  .mobile-head { display: flex !important; }
+  .mobile-nav { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--brand-deep); padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); }
+  .mobile-nav button { border: 0; background: transparent; color: #cfe0ff; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 10.5px; font-weight: 800; padding: 6px 0; border-radius: 12px; cursor: pointer; }
+  .mobile-nav button span { font-size: 20px; }
+  .mobile-nav button[aria-current="page"] { color: #fff; background: rgba(255,255,255,.14); }
+  .fab { bottom: calc(84px + env(safe-area-inset-bottom)); right: 16px; min-height: 54px; }
+  .cols { grid-template-columns: 1fr; }
+  .week { grid-template-columns: repeat(7, minmax(0,1fr)); }
+  .week .arrow { display: none; }
+  .day b { font-size: 18px; }
+}
+.mobile-head { display: none; align-items: center; gap: 10px; margin-bottom: 14px; }
+.mobile-head img { width: 40px; height: 40px; border-radius: 12px; }
+.mobile-head b { font: 800 20px/1 var(--display); flex: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  #bubbles, .side .waves svg, .kpi::after, .suds, .fab .drop, .row.washing .av, .row.washing::before, .tunnel .car::after { animation: none !important; }
+  #bubbles { display: none; }
+  .page, dialog[open] { animation: fade 200ms ease; }
+  .bar .col { animation: none; }
+  .tunnel .car { transition: none; }
+  .burst { display: none; }
+}
+@keyframes fade { from { opacity: 0; } }
+.auth { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 16px; overflow: auto; background: linear-gradient(160deg, var(--brand-deep) 0 55%, #0b3d6e 85%, var(--brand)); }
+.auth .card { width: min(420px, 100%); text-align: center; }
+.auth img { width: 120px; height: 120px; border-radius: 26px; }
+.auth h1 { font-size: 26px; margin: 10px 0 2px; }
+.auth form { text-align: left; margin-top: 14px; }
+.auth .btns { display: flex; flex-direction: column; gap: 8px; }
+.linkbtn { border: 0; background: none; color: var(--brand); font-weight: 800; cursor: pointer; padding: 6px; }
+.assign { border: 1.5px solid var(--line); background: #fff; border-radius: 999px; padding: 6px 10px; font-weight: 700; font-size: 13.5px; max-width: 170px; }
+.who { display: inline-flex; align-items: center; gap: 4px; font-weight: 800; color: var(--brand); }
+.me-chip { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div id="bubbles" aria-hidden="true"></div>
+
+<template id="logoTpl"><img src="logo.jpg" alt="Lucho Detailing &amp; Car Wash"></template>
+
+<div class="app">
+  <aside class="side">
+    <div class="logo"><span data-logo></span><div><b data-bizname>Autolavado</b><small>Panel de gestión ★★★★★</small></div></div>
+    <nav class="nav" id="nav" aria-label="Menú principal"></nav>
+    <div class="side-foot">
+      <button class="chip-btn me-chip" type="button" data-act="logout" id="meChip" title="Cerrar sesión"></button>
+      <button class="chip-btn" id="soundBtn" type="button"></button>
+      <button class="chip-btn" type="button" data-go="ayuda">❓ Ayuda</button>
+    </div>
+    <div class="waves" aria-hidden="true">
+      <svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M0 60 Q150 20 300 60 T600 60 T900 60 T1200 60 V120 H0Z" fill="rgba(20,200,255,.35)"/></svg>
+      <svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M0 75 Q150 40 300 75 T600 75 T900 75 T1200 75 V120 H0Z" fill="rgba(255,255,255,.25)"/></svg>
+    </div>
+  </aside>
+
+  <main class="main" id="main">
+    <div class="mobile-head"><span data-logo></span><b data-bizname>Autolavado</b><button class="btn btn-ghost btn-sm" type="button" data-go="ayuda" aria-label="Ayuda">❓</button><button class="btn btn-ghost btn-sm" id="soundBtnM" type="button"></button></div>
+    <div id="view"></div>
+  </main>
+</div>
+
+<nav class="mobile-nav" id="mnav" aria-label="Menú"></nav>
+<button class="btn btn-accent fab" id="fab" type="button"><span class="drop">💧</span> Agendar servicio</button>
+<div class="auth" id="auth">
+  <div class="card">
+    <img src="logo.jpg" alt="Lucho Detailing &amp; Car Wash">
+    <h1>Panel de Lucho Car Wash</h1>
+    <p class="muted" id="authMsg">Entra con tu correo y contraseña.</p>
+    <form id="authForm">
+      <label class="f">Correo<input id="aEmail" type="email" autocomplete="email" required></label>
+      <label class="f">Contraseña <small>(mínimo 6 caracteres)</small><input id="aPass" type="password" autocomplete="current-password" minlength="6" required></label>
+      <div class="btns"><button class="btn btn-primary" type="submit" id="aLogin">Entrar</button><button class="btn btn-ghost" type="button" id="aSignup">Crear mi cuenta</button><button class="linkbtn" type="button" id="aForgot">Olvidé mi contraseña</button></div>
+    </form>
+    <div id="authOut" hidden><div class="spacer"></div><button class="btn btn-ghost" type="button" id="aLogout">Salir y usar otro correo</button></div>
+  </div>
+</div>
+<div id="toasts" aria-live="polite"></div>
+<dialog id="modal"></dialog>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+"use strict";
+/* ================= Datos (base compartida en Supabase) ================= */
+const SUPABASE_URL = "https://ljidglkyrfjtliutudpv.supabase.co";
+const SUPABASE_KEY = "sb_publishable_x-tLMI4jHk8RSqZ0tH4jKw_H3-921HL"; // public key: access is enforced by row-level security in the database
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const uid = () => crypto.randomUUID();
+const pad = n => String(n).padStart(2, "0");
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const parse = s => { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); };
+const addDays = (s, n) => { const d = parse(s); d.setDate(d.getDate() + n); return ymd(d); };
+const diffDays = (a, b) => Math.round((parse(a) - parse(b)) / 864e5);
+const today = () => ymd(new Date());
+
+const TEMPLATES = {
+  recordatorio: "¡Hola {nombre}! 👋 Te escribimos de {negocio}. Tu {vehiculo} ya está listo para su próximo {servicio} 🚿 (le tocaba el {fecha}). ¿Te agendamos? Responde con el día y la hora que prefieras. 🫧",
+  sugerencia: "¡Hola {nombre}! 🫧 En {negocio} notamos que tu {vehiculo} no ha tenido {sugerido} en un tiempo. Protege la pintura y luce como nuevo ✨ ¿Te apartamos un espacio esta semana?",
+  lluvia: "¡Hola {nombre}! 🌧️ Después de las lluvias, el lodo y la sal dañan la pintura de tu {vehiculo}. En {negocio} te lo dejamos impecable 🚿 ¿Agendamos?",
+  listo: "¡Hola {nombre}! ✅ Tu {vehiculo} ya está listo y reluciente en {negocio}. ¡Te esperamos! 🚗✨",
+};
+const STATUS = ["pendiente", "lavando", "listo", "entregado"];
+const STATUS_LABEL = { pendiente: "⏳ Pendiente", lavando: "🫧 Lavando", listo: "✨ Listo", entregado: "✅ Entregado", cancelado: "✖ Cancelado" };
+const EXP_CATS = ["Insumos (shampoo, cera)", "Agua y luz", "Sueldos", "Renta", "Mantenimiento equipo", "Publicidad", "Otro"];
+const TABLES = ["staff", "services", "clients", "appts", "expenses", "sent"];
+
+let db = { settings: { name: "Lucho Detailing & Car Wash", currency: "MXN", cc: "52" }, staff: [], services: [], clients: [], appts: [], expenses: [], sent: [] };
+let me = null; // fila de staff de quien está conectado
+const isOwner = () => me?.role === "owner";
+let sound = true; try { sound = localStorage.getItem("autolavado.sound") !== "0"; } catch {}
+
+// shortcut: loads every row at sign-in; fine for one car wash (thousands of rows), page by date if it ever gets slow.
+async function loadAll() {
+  const res = await Promise.all([...TABLES.map(t => sb.from(t).select("*")), sb.from("settings").select("*").single()]);
+  const bad = res.find(r => r.error); if (bad) throw bad.error;
+  TABLES.forEach((t, i) => db[t] = res[i].data.map(norm));
+  db.settings = res[TABLES.length].data;
+}
+const norm = r => ({ ...r, ...(r.price != null && { price: Number(r.price) }), ...(r.amount != null && { amount: Number(r.amount) }), ...(r.time && { time: r.time.slice(0, 5) }) });
+function applyLocal(t, row, del) {
+  if (t === "settings") { if (!del) db.settings = row; return; }
+  const list = db[t], i = list.findIndex(x => x.id === row.id);
+  if (del) { if (i >= 0) list.splice(i, 1); } else if (i >= 0) list[i] = { ...list[i], ...norm(row) }; else list.push(norm(row));
+}
+function failed(error) { console.error(error); sfx.error(); toast("⚠️ No se guardó: " + (error.code === "42501" ? "no tienes permiso para esto" : "revisa tu conexión e inténtalo de nuevo")); }
+// Every write goes to the database first; the screen updates only if it was saved.
+async function put(t, row) { const { error } = await sb.from(t).upsert(row); if (error) { failed(error); return false; } applyLocal(t, row); return true; }
+async function del(t, id) { const { error } = await sb.from(t).delete().eq("id", id); if (error) { failed(error); return false; } applyLocal(t, { id }, true); return true; }
+
+let renderTimer;
+function live() {
+  sb.channel("todo").on("postgres_changes", { event: "*", schema: "public" }, p => {
+    applyLocal(p.table, p.eventType === "DELETE" ? p.old : p.new, p.eventType === "DELETE");
+    clearTimeout(renderTimer); renderTimer = setTimeout(() => { if (!document.querySelector(".main input:focus")) render(); }, 250);
+  }).subscribe();
+}
+
+const staff = id => db.staff.find(w => w.id === id);
+const workers = () => db.staff.filter(w => w.active);
+const assignSelect = a => `<select class="assign" data-assign="${a.id}" aria-label="Trabajador asignado"><option value="">👷 Sin asignar</option>${workers().map(w => `<option value="${w.id}" ${w.id === a.worker_id ? "selected" : ""}>👷 ${esc(w.name)}</option>`).join("")}${a.worker_id && !staff(a.worker_id)?.active ? `<option selected>👷 ${esc(staff(a.worker_id)?.name || "Ex trabajador")}</option>` : ""}</select>`;
+const svc = id => db.services.find(s => s.id === id) || { name: "Servicio", icon: "🚗", price: 0, every_days: 30 };
+const cli = id => db.clients.find(c => c.id === id) || { name: "Cliente", vehicle: "", phone: "" };
+const money = n => new Intl.NumberFormat("es-MX", { style: "currency", currency: db.settings.currency || "MXN", maximumFractionDigits: 0 }).format(n || 0);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const fmtDate = s => parse(s).toLocaleDateString("es-MX", { weekday: "short", day: "numeric", month: "short" });
+
+/* ================= Lógica de negocio ================= */
+// Next service due = last delivered wash + that service's recommended interval.
+function nextDue(client_id, appts = db.appts) {
+  const done = appts.filter(a => a.client_id === client_id && a.status === "entregado").sort((a, b) => b.date.localeCompare(a.date));
+  if (!done.length) return null;
+  const last = done[0];
+  const upcoming = appts.some(a => a.client_id === client_id && a.date >= today() && (a.status === "pendiente" || a.status === "lavando"));
+  return { last, due: addDays(last.date, svc(last.service_id).every_days), booked: upcoming };
+}
+function income(from, to, appts = db.appts) { return appts.filter(a => a.status === "entregado" && a.date >= from && a.date <= to).reduce((s, a) => s + Number(a.price || 0), 0); }
+function spend(from, to, exps = db.expenses) { return exps.filter(e => e.date >= from && e.date <= to).reduce((s, e) => s + Number(e.amount || 0), 0); }
+// Suggest a premium service the client hasn't had in 2x its interval.
+function suggestion(client_id) {
+  const hist = db.appts.filter(a => a.client_id === client_id && a.status === "entregado");
+  if (!hist.length) return null;
+  for (const s of [...db.services].sort((a, b) => b.price - a.price)) {
+    const last = hist.filter(a => a.service_id === s.id).sort((a, b) => b.date.localeCompare(a.date))[0];
+    if (!last || diffDays(today(), last.date) > s.every_days * 2) return s;
+  }
+  return null;
+}
+function fillTpl(tpl, c, extra = {}) {
+  return tpl.replace(/\{(\w+)\}/g, (_, k) => ({ nombre: c.name.split(" ")[0], vehiculo: c.vehicle || "auto", negocio: db.settings.name, ...extra }[k] ?? ""));
+}
+function waLink(phone, text) {
+  let d = String(phone || "").replace(/\D/g, "");
+  if (d.length <= 10) d = (db.settings.cc || "") + d; // local number → add country code
+  return `https://wa.me/${d}?text=${encodeURIComponent(text)}`;
+}
+
+/* ================= Sonidos (sintetizados, sin archivos) ================= */
+let ac;
+function audio() { if (!sound) return null; try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === "suspended") ac.resume(); return ac; } catch { return null; } }
+function tone(freq, end, dur, type = "sine", vol = .15, delay = 0) {
+  const c = audio(); if (!c) return;
+  const t = c.currentTime + delay, o = c.createOscillator(), g = c.createGain();
+  o.type = type; o.frequency.setValueAtTime(freq, t); o.frequency.exponentialRampToValueAtTime(end, t + dur);
+  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.001, t + dur);
+  o.connect(g).connect(c.destination); o.start(t); o.stop(t + dur);
+}
+function noise(dur, fFrom, fTo, vol = .2) {
+  const c = audio(); if (!c) return;
+  const b = c.createBuffer(1, c.sampleRate * dur, c.sampleRate), d = b.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
+  const s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain(), t = c.currentTime;
+  f.type = "bandpass"; f.frequency.setValueAtTime(fFrom, t); f.frequency.exponentialRampToValueAtTime(fTo, t + dur);
+  g.gain.value = vol; s.buffer = b; s.connect(f).connect(g).connect(c.destination); s.start();
+}
+const sfx = {
+  pop: () => tone(500 + Math.random() * 300, 1400, .08, "sine", .12),
+  bubbles: () => { for (let i = 0; i < 4; i++) tone(400 + Math.random() * 500, 1500, .07, "sine", .08, i * .06); },
+  splash: () => { noise(.45, 3000, 400, .25); tone(300, 900, .12, "sine", .06, .05); },
+  chime: () => { [784, 988, 1319].forEach((f, i) => tone(f, f, .35, "triangle", .1, i * .09)); },
+  whoosh: () => noise(.25, 600, 2400, .08),
+  error: () => tone(220, 160, .2, "square", .06),
+};
+
+/* ================= Efectos ================= */
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+function spawnBubble() {
+  if (reduced || document.hidden) return;
+  const b = document.createElement("i"), size = 10 + Math.random() * 42;
+  b.className = "bubble";
+  b.style.cssText = `width:${size}px;height:${size}px;left:${Math.random() * 100}vw;--dx:${(Math.random() * 80 - 40).toFixed(0)}px;animation-duration:${(9 + Math.random() * 10).toFixed(1)}s`;
+  b.addEventListener("animationend", () => b.remove());
+  document.getElementById("bubbles").appendChild(b);
+}
+for (let i = 0; i < 6; i++) setTimeout(spawnBubble, i * 500);
+setInterval(spawnBubble, 1400);
+
+function burst(el) {
+  if (reduced || !el) return;
+  const r = el.getBoundingClientRect(), w = document.createElement("div");
+  w.className = "burst"; w.style.left = r.left + r.width / 2 + "px"; w.style.top = r.top + r.height / 2 + "px";
+  for (let i = 0; i < 14; i++) {
+    const a = (Math.PI * 2 * i) / 14, dist = 50 + Math.random() * 60, s = 8 + Math.random() * 16, p = document.createElement("i");
+    p.style.cssText = `width:${s}px;height:${s}px;--x:${Math.cos(a) * dist}px;--y:${Math.sin(a) * dist - 20}px;animation-delay:${Math.random() * 60}ms`;
+    w.appendChild(p);
+  }
+  document.body.appendChild(w); setTimeout(() => w.remove(), 900);
+}
+function toast(msg) {
+  const t = document.createElement("div"); t.className = "toast enter"; t.textContent = msg;
+  document.getElementById("toasts").appendChild(t);
+  requestAnimationFrame(() => requestAnimationFrame(() => t.classList.remove("enter")));
+  setTimeout(() => { t.classList.add("leave"); t.addEventListener("transitionend", () => t.remove(), { once: true }); }, 2600);
+}
+
+/* ================= Navegación ================= */
+const PAGES = [
+  { id: "inicio", icon: "🏠", label: "Inicio", sub: "Resumen del día", hint: "Aquí ves de un vistazo cómo va el día. Usa los botones de colores para lo más común." },
+  { id: "agenda", icon: "📅", label: "Agenda", sub: "Citas y estado del lavado", hint: "Elige un día arriba. Toca «Siguiente paso» para mover cada auto: Pendiente → Lavando → Listo → Entregado." },
+  { id: "clientes", icon: "👥", label: "Clientes", sub: "Personas y vehículos", hint: "Registra a tus clientes y su vehículo. Toca uno para ver su historial." },
+  { id: "recordatorios", icon: "🔔", label: "Recordatorios", sub: "Avisos y sugerencias", hint: "Te mostramos quién ya necesita su siguiente lavado. Toca «WhatsApp» y el mensaje se abre listo para enviar." },
+  { id: "finanzas", own: true, icon: "💰", label: "Finanzas", sub: "Ingresos y gastos", hint: "Los ingresos se suman solos cuando marcas un servicio como «Entregado». Aquí registra tus gastos." },
+  { id: "servicios", own: true, icon: "🧴", label: "Servicios", sub: "Precios y frecuencia", hint: "Define tus servicios, precio y cada cuántos días conviene repetirlos (para los recordatorios)." },
+  { id: "equipo", own: true, icon: "👷", label: "Equipo", sub: "Trabajadores y accesos", hint: "Agrega a cada trabajador con su correo. Luego esa persona entra con «Crear mi cuenta» usando ese mismo correo." },
+];
+const pages = () => PAGES.filter(p => !p.own || isOwner());
+let page = "inicio";
+let agendaDay = today();
+let agendaFilter = "todos";
+
+function renderNav() {
+  document.getElementById("nav").innerHTML = pages().map(p => `<button type="button" data-go="${p.id}" ${p.id === page ? 'aria-current="page"' : ""}><span class="ico">${p.icon}</span><span><b>${p.label}</b><small>${p.sub}</small></span></button>`).join("");
+  document.getElementById("mnav").innerHTML = pages().map(p => `<button type="button" data-go="${p.id}" ${p.id === page ? 'aria-current="page"' : ""}><span>${p.icon}</span>${p.label}</button>`).join("");
+  document.getElementById("soundBtn").textContent = sound ? "🔊" : "🔇"; document.getElementById("soundBtnM").textContent = sound ? "🔊" : "🔇";
+  document.getElementById("meChip").textContent = `👤 ${me?.name || ""} · Salir`;
+  document.querySelectorAll("[data-bizname]").forEach(e => e.textContent = db.settings.name);
+  document.querySelectorAll("[data-logo]").forEach(e => { if (!e.firstChild) e.appendChild(document.getElementById("logoTpl").content.cloneNode(true)); });
+}
+function go(id) { if (id !== page) sfx.whoosh(); page = id; location.hash = id; render(); window.scrollTo({ top: 0 }); }
+function header(extraBtn = "") {
+  const p = PAGES.find(x => x.id === page) || { label: "Ayuda", icon: "❓", hint: "Guía rápida para usar el panel." };
+  return `<div class="top"><div><div class="crumb">${esc(db.settings.name)} › <span>${p.label}</span></div><h1>${p.icon} ${p.label}</h1><div class="hint"><span>💡</span><span>${p.hint}</span></div></div><div style="display:flex;gap:8px;flex-wrap:wrap">${extraBtn}</div></div>`;
+}
+
+/* ================= Vistas ================= */
+function apptRow(a, opts = {}) {
+  const c = cli(a.client_id), s = svc(a.service_id), i = STATUS.indexOf(a.status);
+  const next = i >= 0 && i < 3 ? STATUS[i + 1] : null;
+  const nextLbl = { lavando: "🫧 Empezar lavado", listo: "✨ Marcar listo", entregado: "✅ Entregar y cobrar" }[next];
+  return `<div class="row ${a.status === "lavando" ? "washing" : ""}">
+    <div class="av">${s.icon}</div>
+    <div class="info"><b>${a.time} · ${esc(c.name)}</b><small>${esc(s.name)} · ${esc(c.vehicle)} ${c.plate ? "· " + esc(c.plate) : ""}${opts.date ? " · " + fmtDate(a.date) : ""}</small></div>
+    <span class="tag st-${a.status}">${STATUS_LABEL[a.status]}</span><b>${money(a.price)}</b>
+    <div class="acts">
+      ${a.status === "entregado" || a.status === "cancelado" ? `<span class="who">👷 ${esc(staff(a.worker_id)?.name || "Sin asignar")}</span>` : assignSelect(a)}
+      ${next ? `<button class="btn btn-primary btn-sm" data-act="advance" data-id="${a.id}">${nextLbl}</button>` : ""}
+      ${a.status === "listo" ? `<a class="btn btn-wa btn-sm" target="_blank" rel="noopener" href="${waLink(c.phone, fillTpl(TEMPLATES.listo, c))}">📲 Avisar</a>` : ""}
+      ${a.status === "pendiente" ? `<button class="btn btn-ghost btn-sm" data-act="cancel" data-id="${a.id}" aria-label="Cancelar cita">✖</button>` : ""}
+    </div>
+    ${a.status === "lavando" ? '<div class="suds" aria-hidden="true"><i></i><i></i><i></i></div>' : ""}
+  </div>`;
+}
+function empty(e, msg, btn = "") { return `<div class="empty"><span class="e">${e}</span>${msg}${btn ? `<div class="spacer"></div>${btn}` : ""}</div>`; }
+
+function viewInicio() {
+  const t = today(), todays = db.appts.filter(a => a.date === t && a.status !== "cancelado").sort((a, b) => a.time.localeCompare(b.time));
+  const monthStart = t.slice(0, 8) + "01";
+  const dueCount = db.clients.filter(c => { const n = nextDue(c.id); return n && !n.booked && n.due <= addDays(t, 3); }).length;
+  const days = [...Array(7)].map((_, i) => addDays(t, i - 6));
+  const vals = days.map(d => income(d, d)), max = Math.max(...vals, 1);
+  const mineToday = todays.filter(a => a.worker_id === me?.id).length;
+  const kpi = (lbl, val, em, color) => `<div class="card kpi" style="--kc:${color}"><span class="em">${em}</span><div class="lbl">${lbl}</div><div class="val">${val}</div></div>`;
+  return header() + `
+  <div class="grid quick">
+    <button class="qa" style="--c1:#0077d6;--c2:#0097fe" data-act="new"><span class="e">🚗</span><b>Agendar servicio</b><small>Nueva cita en 3 pasos</small></button>
+    <button class="qa" style="--c1:#7b5cff;--c2:#b48bff" data-go="agenda"><span class="e">🫧</span><b>Autos de hoy</b><small>${todays.filter(a => a.status !== "entregado").length} en fila</small></button>
+    <button class="qa" style="--c1:#e0b800;--c2:#ffe81a;color:#121317" data-go="recordatorios"><span class="e">🔔</span><b>Recordar clientes</b><small>${dueCount} por avisar</small></button>
+    ${isOwner() ? `<button class="qa" style="--c1:#0fa968;--c2:#4fd6a0" data-act="expense"><span class="e">🧾</span><b>Registrar gasto</b><small>Insumos, agua, sueldos…</small></button>`
+      : `<button class="qa" style="--c1:#0fa968;--c2:#4fd6a0" data-act="mine"><span class="e">👷</span><b>Mis servicios</b><small>${mineToday} asignados hoy</small></button>`}
+  </div>
+  <div class="spacer"></div>
+  <div class="grid kpis">
+    ${kpi("Citas hoy", todays.length, "📅", "#14c8ff")}
+    ${kpi("Lavando ahora", todays.filter(a => a.status === "lavando").length, "🫧", "#7b5cff")}
+    ${isOwner() ? kpi("Ingresos hoy", money(income(t, t)), "💵", "#16b67a") : kpi("Mis servicios hoy", mineToday, "👷", "#16b67a")}
+    ${isOwner() ? kpi("Balance del mes", money(income(monthStart, t) - spend(monthStart, t)), "📈", "#ffc928") : kpi("Sin asignar hoy", todays.filter(a => !a.worker_id && a.status !== "entregado").length, "🙋", "#ffc928")}
+  </div>
+  <div class="spacer"></div>
+  <div class="grid two">
+    <div class="card"><h3>🚿 Fila de hoy</h3><div class="list">${todays.length ? todays.map(a => apptRow(a)).join("") : empty("🧽", "No hay citas para hoy.", '<button class="btn btn-primary" data-act="new">Agendar la primera</button>')}</div></div>
+    ${isOwner() ? `<div class="card"><h3>📊 Ingresos últimos 7 días</h3>
+      <div class="chart" role="img" aria-label="Gráfica de ingresos de los últimos 7 días">${days.map((d, i) => `<div class="bar"><div class="col" data-v="${money(vals[i])}" style="height:${Math.max(4, (vals[i] / max) * 100)}%;animation-delay:${i * 50}ms"></div><span>${parse(d).toLocaleDateString("es-MX", { weekday: "short" })}</span></div>`).join("")}</div>
+      <div class="spacer"></div>
+      <div class="muted">Total semana: <b class="money-in">${money(vals.reduce((a, b) => a + b, 0))}</b></div>
+    </div>` : `<div class="card"><h3>👷 Hoy por trabajador</h3>${byWorker(t, t)}</div>`}
+  </div>
+  ${isOwner() ? `<div class="spacer"></div><div class="card"><h3>👷 Hoy por trabajador</h3>${byWorker(t, t)}</div>` : ""}`;
+}
+
+function viewAgenda() {
+  const start = addDays(agendaDay, -((parse(agendaDay).getDay() + 6) % 7)); // lunes
+  const week = [...Array(7)].map((_, i) => addDays(start, i));
+  const keep = { todos: () => true, mios: a => a.worker_id === me?.id, libres: a => !a.worker_id }[agendaFilter];
+  const list = db.appts.filter(a => a.date === agendaDay && keep(a)).sort((a, b) => a.time.localeCompare(b.time));
+  return header(`<button class="btn btn-ghost" data-act="today">Hoy</button>`) + `
+  <div class="tabs" role="tablist">${[["todos", "Todos"], ["mios", "👷 Mis servicios"], ["libres", "🙋 Sin asignar"]].map(([k, l]) => `<button role="tab" aria-selected="${agendaFilter === k}" data-act="afilter" data-k="${k}">${l}</button>`).join("")}</div>
+  <div class="week">
+    <button class="arrow" data-act="week" data-n="-7" aria-label="Semana anterior">◀</button>
+    ${week.map(d => { const n = db.appts.filter(a => a.date === d && a.status !== "cancelado").length; return `<button class="day ${d === today() ? "today" : ""}" aria-pressed="${d === agendaDay}" data-act="day" data-d="${d}"><small>${parse(d).toLocaleDateString("es-MX", { weekday: "short" })}</small><b>${parse(d).getDate()}</b><div class="dots">${"<i></i>".repeat(Math.min(n, 4))}</div></button>`; }).join("")}
+    <button class="arrow" data-act="week" data-n="7" aria-label="Semana siguiente">▶</button>
+  </div>
+  <div class="card"><h3>📋 ${parse(agendaDay).toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long" })}</h3>
+    <div class="list">${list.length ? list.map(a => apptRow(a)).join("") : empty("📭", "Día libre. ¡Buen momento para mandar recordatorios!", `<button class="btn btn-primary" data-act="new" data-d="${agendaDay}">Agendar este día</button>`)}</div>
+  </div>`;
+}
+
+function viewClientes() {
+  return header(`<button class="btn btn-primary" data-act="client">➕ Nuevo cliente</button>`) + `
+  <input class="search" id="q" placeholder="🔎 Buscar por nombre, placa o vehículo…" aria-label="Buscar cliente">
+  <div class="card"><div class="list" id="clist">${clientRows("")}</div></div>`;
+}
+function clientRows(q) {
+  q = q.toLowerCase();
+  const rows = db.clients.filter(c => (c.name + c.plate + c.vehicle).toLowerCase().includes(q));
+  if (!rows.length) return empty("👤", q ? "Nadie coincide con la búsqueda." : "Aún no tienes clientes.", '<button class="btn btn-primary" data-act="client">Agregar cliente</button>');
+  return rows.map(c => {
+    const n = nextDue(c.id), visits = db.appts.filter(a => a.client_id === c.id && a.status === "entregado").length;
+    return `<div class="row"><div class="av">🚘</div><div class="info"><b>${esc(c.name)}</b><small>${esc(c.vehicle)} · ${esc(c.plate)} · 📞 ${esc(c.phone)}</small><small>${visits} visitas${n ? " · próximo lavado: " + fmtDate(n.due) : ""}</small></div>
+    <div class="acts"><button class="btn btn-ghost btn-sm" data-act="history" data-id="${c.id}">📜 Historial</button><button class="btn btn-ghost btn-sm" data-act="client" data-id="${c.id}">✏️ Editar</button><button class="btn btn-primary btn-sm" data-act="new" data-c="${c.id}">🚗 Agendar</button></div></div>`;
+  }).join("");
+}
+
+let remTab = "vencidos";
+function viewRecordatorios() {
+  const t = today();
+  const items = db.clients.map(c => ({ c, n: nextDue(c.id), sug: suggestion(c.id) })).filter(x => x.n && !x.n.booked);
+  const groups = {
+    vencidos: items.filter(x => x.n.due <= t),
+    semana: items.filter(x => x.n.due > t && x.n.due <= addDays(t, 7)),
+    sugerencias: items.filter(x => x.sug),
+  };
+  const lastSent = id => db.sent.filter(s => s.client_id === id).sort((a, b) => b.date.localeCompare(a.date))[0];
+  const list = groups[remTab];
+  return header(`<button class="btn btn-ghost" data-act="broadcast">🌧️ Mensaje a todos</button>`) + `
+  <div class="tabs" role="tablist">
+    ${[["vencidos", "🔴 Ya les toca"], ["semana", "🟡 Esta semana"], ["sugerencias", "💡 Sugerencias"]].map(([k, l]) => `<button role="tab" aria-selected="${remTab === k}" data-act="remtab" data-k="${k}">${l} (${groups[k].length})</button>`).join("")}
+  </div>
+  <div class="card"><div class="list">${list.length ? list.map(({ c, n, sug }) => {
+    const ls = lastSent(c.id), late = diffDays(t, n.due);
+    const detail = remTab === "sugerencias" ? `Sugerir: ${sug.icon} ${esc(sug.name)}` : `Último: ${esc(svc(n.last.service_id).name)} el ${fmtDate(n.last.date)} · ${late > 0 ? `<b class="money-out">hace ${late} días le tocaba</b>` : late === 0 ? "<b>le toca hoy</b>" : `le toca en ${-late} días`}`;
+    return `<div class="row"><div class="av">${remTab === "sugerencias" ? "💡" : "🔔"}</div><div class="info"><b>${esc(c.name)} · ${esc(c.vehicle)}</b><small>${detail}</small>${ls ? `<small>✉️ Avisado el ${fmtDate(ls.date)}</small>` : ""}</div>
+      <div class="acts"><button class="btn btn-wa btn-sm" data-act="remind" data-id="${c.id}" data-k="${remTab === "sugerencias" ? "sugerencia" : "recordatorio"}">📲 WhatsApp</button><button class="btn btn-primary btn-sm" data-act="new" data-c="${c.id}">🚗 Agendar</button></div></div>`;
+  }).join("") : empty("🎉", "Nadie pendiente en esta lista. ¡Todo al día!")}</div></div>`;
+}
+
+function viewFinanzas() {
+  const t = today(), months = [...Array(6)].map((_, i) => { const d = parse(t); d.setDate(1); d.setMonth(d.getMonth() - 5 + i); return ymd(d); });
+  const range = m => { const d = parse(m); d.setMonth(d.getMonth() + 1); d.setDate(0); return [m, ymd(d)]; };
+  const inc = months.map(m => income(...range(m))), out = months.map(m => spend(...range(m))), max = Math.max(...inc, ...out, 1);
+  const [ms, me] = range(months[5]);
+  const moves = [
+    ...db.appts.filter(a => a.status === "entregado" && a.date >= ms && a.date <= me).map(a => ({ date: a.date, txt: `${svc(a.service_id).icon} ${svc(a.service_id).name} · ${cli(a.client_id).name}`, amt: Number(a.price) })),
+    ...db.expenses.filter(e => e.date >= ms && e.date <= me).map(e => ({ date: e.date, txt: `🧾 ${e.concept} · ${e.category}`, amt: -Number(e.amount), id: e.id })),
+  ].sort((a, b) => b.date.localeCompare(a.date));
+  const cats = {}; db.expenses.filter(e => e.date >= ms && e.date <= me).forEach(e => cats[e.category] = (cats[e.category] || 0) + Number(e.amount));
+  return header(`<button class="btn btn-primary" data-act="expense">➕ Registrar gasto</button><button class="btn btn-ghost" data-act="csv">⬇️ Exportar CSV</button>`) + `
+  <div class="grid kpis">
+    <div class="card kpi" style="--kc:#16b67a"><span class="em">💵</span><div class="lbl">Ingresos del mes</div><div class="val money-in">${money(inc[5])}</div></div>
+    <div class="card kpi" style="--kc:#f0475e"><span class="em">🧾</span><div class="lbl">Gastos del mes</div><div class="val money-out">${money(out[5])}</div></div>
+    <div class="card kpi" style="--kc:#ffc928"><span class="em">📈</span><div class="lbl">Ganancia del mes</div><div class="val">${money(inc[5] - out[5])}</div></div>
+    <div class="card kpi" style="--kc:#14c8ff"><span class="em">🚗</span><div class="lbl">Ticket promedio</div><div class="val">${money(inc[5] / Math.max(1, moves.filter(m => m.amt > 0).length))}</div></div>
+  </div><div class="spacer"></div>
+  <div class="grid two">
+    <div class="card"><h3>📊 Últimos 6 meses</h3>
+      <div class="chart" role="img" aria-label="Ingresos y gastos de los últimos 6 meses">${months.map((m, i) => `<div class="bar"><div style="display:flex;gap:3px;align-items:flex-end;height:100%;width:100%;justify-content:center"><div class="col" data-v="${money(inc[i])}" style="height:${Math.max(3, inc[i] / max * 100)}%;animation-delay:${i * 50}ms"></div><div class="col neg" data-v="${money(out[i])}" style="height:${Math.max(3, out[i] / max * 100)}%;animation-delay:${i * 50 + 25}ms"></div></div><span>${parse(m).toLocaleDateString("es-MX", { month: "short" })}</span></div>`).join("")}</div>
+      <div class="legend"><span><i style="background:var(--brand)"></i>Ingresos</span><span><i style="background:var(--bad)"></i>Gastos</span></div>
+    </div>
+    <div class="card"><h3>🧾 Gastos por categoría (mes)</h3><div class="list">${Object.keys(cats).length ? Object.entries(cats).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<div class="row"><div class="info"><b>${esc(k)}</b><div style="height:8px;border-radius:8px;background:#ffe8eb;margin-top:6px"><div style="height:100%;width:${v / out[5] * 100}%;background:var(--bad);border-radius:8px"></div></div></div><b class="money-out">${money(v)}</b></div>`).join("") : empty("🪣", "Sin gastos este mes.")}</div></div>
+  </div><div class="spacer"></div>
+  <div class="card"><h3>📒 Movimientos del mes</h3><div class="list">${moves.length ? moves.map(m => `<div class="row"><div class="info"><b>${esc(m.txt)}</b><small>${fmtDate(m.date)}</small></div><b class="${m.amt >= 0 ? "money-in" : "money-out"}">${m.amt >= 0 ? "+" : "−"}${money(Math.abs(m.amt))}</b>${m.id ? `<button class="btn btn-ghost btn-sm" data-act="delexp" data-id="${m.id}" aria-label="Borrar gasto">🗑️</button>` : ""}</div>`).join("") : empty("💤", "Aún no hay movimientos este mes.")}</div></div>`;
+}
+
+function viewServicios() {
+  return header(`<button class="btn btn-primary" data-act="service">➕ Nuevo servicio</button>`) + `
+  <div class="grid quick">${db.services.map(s => `<div class="card"><div style="font-size:34px">${s.icon}</div><h3 style="margin:6px 0 4px">${esc(s.name)}</h3><div class="val" style="font:800 26px var(--display);color:var(--brand)">${money(s.price)}</div><div class="muted">⏱️ ${s.minutes} min · 🔁 cada ${s.every_days} días</div><div class="spacer"></div><button class="btn btn-ghost btn-sm" data-act="service" data-id="${s.id}">✏️ Editar</button></div>`).join("")}</div>
+  <div class="spacer"></div>
+  <div class="card"><h3>⚙️ Datos del negocio</h3>
+    <div class="cols"><label class="f">Nombre del autolavado<input id="setName" value="${esc(db.settings.name)}"></label>
+    <label class="f">Moneda <small>(código, ej. MXN, USD, PEN, COP)</small><input id="setCur" value="${esc(db.settings.currency)}" maxlength="3"></label>
+    <label class="f">Código de país para WhatsApp <small>(ej. 52 México, 51 Perú, 57 Colombia)</small><input id="setCC" inputmode="numeric" value="${esc(db.settings.cc)}"></label></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-primary" data-act="savesettings">💾 Guardar</button><button class="btn btn-ghost" data-act="backup">⬇️ Copia de seguridad</button></div>
+  </div>`;
+}
+
+// Delivered services and income per worker in a date range (who did what).
+function byWorker(from, to) {
+  const rows = workers().map(w => {
+    const list = db.appts.filter(a => a.worker_id === w.id && a.date >= from && a.date <= to && a.status !== "cancelado");
+    const done = list.filter(a => a.status === "entregado");
+    return { w, total: list.length, done: done.length, money: done.reduce((s, a) => s + a.price, 0) };
+  });
+  if (!rows.length) return empty("👷", "Aún no hay trabajadores.");
+  return `<div class="list">${rows.map(x => `<div class="row"><div class="av">👷</div><div class="info"><b>${esc(x.w.name)}</b><small>${x.done} entregados de ${x.total} asignados</small></div>${isOwner() ? `<b class="money-in">${money(x.money)}</b>` : ""}</div>`).join("")}</div>`;
+}
+function viewEquipo() {
+  const t = today(), ms = t.slice(0, 8) + "01";
+  return header(`<button class="btn btn-primary" data-act="worker">➕ Agregar trabajador</button>`) + `
+  <div class="grid two">
+    <div class="card"><h3>👥 Personas con acceso</h3><div class="list">${db.staff.map(w => `<div class="row" style="${w.active ? "" : "opacity:.55"}"><div class="av">${w.role === "owner" ? "👑" : "👷"}</div><div class="info"><b>${esc(w.name)}</b><small>${esc(w.email)} · ${w.role === "owner" ? "Dueño" : "Trabajador"}${w.active ? "" : " · sin acceso"}${w.user_id ? "" : " · aún no crea su cuenta"}</small></div>${w.id === me.id ? "<span class=\"tag st-entregado\">Tú</span>" : `<div class="acts"><button class="btn btn-ghost btn-sm" data-act="worker" data-id="${w.id}">✏️ Editar</button></div>`}</div>`).join("")}</div></div>
+    <div class="card"><h3>🏆 Este mes por trabajador</h3>${byWorker(ms, t)}</div>
+  </div>`;
+}
+function workerForm(id) {
+  const w = db.staff.find(x => x.id === id) || { role: "worker", active: true };
+  openModal(id ? "✏️ Editar trabajador" : "➕ Agregar trabajador", "Con su correo podrá crear su cuenta y entrar al panel.",
+    `<label class="f">Nombre *<input id="wName" value="${esc(w.name)}"></label>
+     <label class="f">Correo *<input id="wEmail" type="email" value="${esc(w.email)}" ${w.user_id ? "readonly" : ""}></label>
+     <label class="f">Rol<select id="wRole"><option value="worker" ${w.role === "worker" ? "selected" : ""}>Trabajador: agenda, clientes y recordatorios</option><option value="owner" ${w.role === "owner" ? "selected" : ""}>Dueño: todo, incluidas finanzas</option></select></label>
+     <label class="f">Acceso<select id="wActive"><option value="1" ${w.active ? "selected" : ""}>Puede entrar</option><option value="0" ${w.active ? "" : "selected"}>Sin acceso</option></select></label>`,
+    `<button class="btn btn-ghost" data-act="close">Cancelar</button><button class="btn btn-primary" data-act="saveworker" data-id="${id || ""}">💾 Guardar</button>`);
+}
+function viewAyuda() {
+  return header() + `<div class="grid two"><div class="card"><h3>🧭 ¿Cómo se usa?</h3><ol class="help-steps">
+    <li><b>Agenda una cita</b> con el botón amarillo <b>«💧 Agendar servicio»</b> (siempre está abajo a la derecha).</li>
+    <li>En <b>📅 Agenda</b>, cuando llegue el auto toca <b>«🫧 Empezar lavado»</b>, luego <b>«✨ Marcar listo»</b> y avísale por WhatsApp.</li>
+    <li>Al entregarlo toca <b>«✅ Entregar y cobrar»</b>: el ingreso se suma solo a <b>💰 Finanzas</b>.</li>
+    <li>Entra a <b>🔔 Recordatorios</b> cada mañana y avisa a quien ya le toca su siguiente lavado.</li>
+    <li>Cada cita tiene un <b>👷 trabajador asignado</b>. Cámbialo desde la lista; si alguien toca «Empezar lavado» en una cita libre, queda asignada a esa persona.</li>
+    <li>El dueño registra los gastos y ve las ganancias en <b>💰 Finanzas</b>.</li>
+  </ol></div><div class="card"><h3>👥 Trabajo en equipo</h3><p class="muted">Todos ven lo mismo al instante: si alguien agenda o termina un lavado, aparece en las demás pantallas sin recargar. El dueño agrega trabajadores en <b>👷 Equipo</b>; cada uno entra con su propio correo y contraseña.</p></div></div>`;
+}
+
+const VIEWS = { inicio: viewInicio, agenda: viewAgenda, clientes: viewClientes, recordatorios: viewRecordatorios, finanzas: viewFinanzas, servicios: viewServicios, equipo: viewEquipo, ayuda: viewAyuda };
+function render() {
+  if (!me) return;
+  if (page !== "ayuda" && !pages().some(p => p.id === page)) page = "inicio";
+  renderNav();
+  const v = document.getElementById("view");
+  v.innerHTML = `<div class="page">${(VIEWS[page] || viewInicio)()}</div>`;
+  const q = document.getElementById("q"); if (q) q.oninput = () => document.getElementById("clist").innerHTML = clientRows(q.value);
+  }
+
+/* ================= Modales ================= */
+const modal = document.getElementById("modal");
+function openModal(title, sub, body, foot) {
+  modal.innerHTML = `<div class="m-head"><h2>${title}</h2><p>${sub}</p><button class="x" type="button" data-act="close" aria-label="Cerrar">✕</button></div><div class="m-body">${body}</div><div class="m-foot">${foot}</div>`;
+  if (!modal.open) modal.showModal();
+  sfx.bubbles();
+}
+const closeModal = () => modal.open && modal.close();
+modal.addEventListener("click", e => { if (e.target === modal) closeModal(); });
+const val = id => document.getElementById(id)?.value.trim() ?? "";
+
+// Agendar: wizard en 3 pasos con un auto que avanza por el túnel de lavado
+let wiz;
+function wizard(pre = {}) { wiz = { step: 0, client_id: pre.c || null, service_id: null, date: pre.d || today(), time: null, worker_id: isOwner() ? "" : me.id }; if (wiz.client_id) wiz.step = 1; drawWizard(); }
+function drawWizard() {
+  const steps = ["1 · Cliente", "2 · Servicio", "3 · Día y hora"];
+  const tunnel = `<div class="tunnel" aria-hidden="true"><div class="steps">${steps.map((s, i) => `<span class="${i <= wiz.step ? "on" : ""}">${s}</span>`).join("")}</div><div class="car" style="transform:translateX(${wiz.step * 100}%)">🚙</div></div>`;
+  let body = "";
+  if (wiz.step === 0) {
+    body = `<input class="search" id="wq" placeholder="🔎 Buscar cliente…" aria-label="Buscar cliente"><div class="pick" id="wclients">${wizClients("")}</div><div class="spacer"></div><button class="btn btn-ghost btn-sm" data-act="client" data-from="wiz">➕ Cliente nuevo</button>`;
+  } else if (wiz.step === 1) {
+    body = `<p class="muted" style="margin-top:0">Cliente: <b>${esc(cli(wiz.client_id).name)}</b> · ${esc(cli(wiz.client_id).vehicle)}</p><div class="pick">${db.services.map(s => `<button type="button" data-act="wsvc" data-id="${s.id}" aria-pressed="${wiz.service_id === s.id}"><span class="e">${s.icon}</span><b>${esc(s.name)}</b><small>${money(s.price)} · ${s.minutes} min</small></button>`).join("")}</div>`;
+  } else {
+    // one car per worker at the same time: a slot is full when every active worker already has a car then
+    const cap = Math.max(1, workers().length), taken = db.appts.filter(a => a.date === wiz.date && a.status !== "cancelado").map(a => a.time).filter((t, _, all) => all.filter(x => x === t).length >= cap);
+    const slots = []; for (let h = 8; h <= 18; h++) for (const m of ["00", "30"]) slots.push(`${pad(h)}:${m}`);
+    const past = wiz.date === today() ? `${pad(new Date().getHours())}:${pad(new Date().getMinutes())}` : "";
+    body = `<label class="f">Día<input type="date" id="wdate" value="${wiz.date}" min="${today()}"></label><label class="f">Trabajador asignado<select id="wWorker"><option value="">Sin asignar por ahora</option>${workers().map(w => `<option value="${w.id}" ${w.id === wiz.worker_id ? "selected" : ""}>👷 ${esc(w.name)}</option>`).join("")}</select></label><div class="f">Horario disponible <small>(tachados = llenos)</small></div><div class="slots">${slots.map(s => `<button type="button" data-act="wslot" data-t="${s}" aria-pressed="${wiz.time === s}" ${taken.includes(s) || (past && s < past) ? "disabled" : ""}>${s}</button>`).join("")}</div>
+    <div class="spacer"></div><div class="row"><div class="av">${svc(wiz.service_id).icon}</div><div class="info"><b>${esc(svc(wiz.service_id).name)} para ${esc(cli(wiz.client_id).name)}</b><small>${fmtDate(wiz.date)}${wiz.time ? " a las " + wiz.time : " · elige una hora"}</small></div><b>${money(svc(wiz.service_id).price)}</b></div>`;
+  }
+  const can = [wiz.client_id, wiz.service_id, wiz.time][wiz.step];
+  openModal("🚗 Agendar servicio", "Sigue los 3 pasos. Puedes regresar cuando quieras.", tunnel + body,
+    `<button class="btn btn-ghost" data-act="${wiz.step ? "wback" : "close"}">${wiz.step ? "◀ Atrás" : "Cancelar"}</button><button class="btn btn-primary" data-act="wnext" ${can ? "" : "disabled"} style="${can ? "" : "opacity:.5"}">${wiz.step < 2 ? "Siguiente ▶" : "💧 Confirmar cita"}</button>`);
+  const wq = document.getElementById("wq"); if (wq) { wq.oninput = () => document.getElementById("wclients").innerHTML = wizClients(wq.value); }
+  const ww = document.getElementById("wWorker"); if (ww) ww.onchange = () => wiz.worker_id = ww.value;
+  const wd = document.getElementById("wdate"); if (wd) wd.onchange = () => { if (wd.value) { wiz.date = wd.value; wiz.time = null; drawWizard(); } };
+}
+function wizClients(q) {
+  q = q.toLowerCase();
+  const r = db.clients.filter(c => (c.name + c.plate + c.vehicle).toLowerCase().includes(q));
+  return r.length ? r.map(c => `<button type="button" data-act="wcli" data-id="${c.id}" aria-pressed="${wiz.client_id === c.id}"><span class="e">🚘</span><b>${esc(c.name)}</b><small>${esc(c.vehicle)} · ${esc(c.plate)}</small></button>`).join("") : `<p class="muted">Sin resultados. Usa «Cliente nuevo».</p>`;
+}
+
+function clientForm(id, from) {
+  const c = db.clients.find(x => x.id === id) || {};
+  openModal(id ? "✏️ Editar cliente" : "➕ Nuevo cliente", "Con nombre y WhatsApp basta. Lo demás es opcional.",
+    `<label class="f">Nombre *<input id="cName" value="${esc(c.name)}" autocomplete="name"></label>
+     <label class="f">WhatsApp * <small>(10 dígitos, o con código de país)</small><input id="cPhone" type="tel" inputmode="tel" value="${esc(c.phone)}"></label>
+     <div class="cols"><label class="f">Vehículo <small>(marca, modelo, color)</small><input id="cVeh" value="${esc(c.vehicle)}"></label><label class="f">Placa<input id="cPlate" value="${esc(c.plate)}"></label></div>
+     <label class="f">Notas<input id="cNotes" value="${esc(c.notes)}"></label>`,
+    `${id ? `<button class="btn btn-danger" data-act="delclient" data-id="${id}">🗑️ Borrar</button>` : "<span></span>"}<button class="btn btn-primary" data-act="saveclient" data-id="${id || ""}" data-from="${from || ""}">💾 Guardar cliente</button>`);
+}
+function serviceForm(id) {
+  const s = db.services.find(x => x.id === id) || { icon: "🚿", minutes: 30, every_days: 30 };
+  openModal(id ? "✏️ Editar servicio" : "➕ Nuevo servicio", "El intervalo define cuándo recordarle al cliente.",
+    `<div class="cols"><label class="f">Nombre *<input id="sName" value="${esc(s.name)}"></label><label class="f">Ícono <small>(emoji)</small><input id="sIcon" value="${esc(s.icon)}" maxlength="4"></label>
+     <label class="f">Precio *<input id="sPrice" type="number" min="0" inputmode="decimal" value="${s.price ?? ""}"></label><label class="f">Duración (min)<input id="sMin" type="number" min="5" value="${s.minutes}"></label></div>
+     <label class="f">Recordar cada (días)<input id="sInt" type="number" min="1" value="${s.every_days}"></label>`,
+    `${id ? `<button class="btn btn-danger" data-act="delservice" data-id="${id}">🗑️ Borrar</button>` : "<span></span>"}<button class="btn btn-primary" data-act="saveservice" data-id="${id || ""}">💾 Guardar servicio</button>`);
+}
+function expenseForm() {
+  openModal("🧾 Registrar gasto", "Anota lo que sale de caja para ver tu ganancia real.",
+    `<label class="f">Concepto *<input id="eCon" placeholder="Ej. 2 galones de shampoo"></label>
+     <div class="cols"><label class="f">Monto *<input id="eAmt" type="number" min="0" step="0.01" inputmode="decimal"></label><label class="f">Fecha<input id="eDate" type="date" value="${today()}"></label></div>
+     <label class="f">Categoría<select id="eCat">${EXP_CATS.map(c => `<option>${c}</option>`).join("")}</select></label>`,
+    `<button class="btn btn-ghost" data-act="close">Cancelar</button><button class="btn btn-primary" data-act="saveexpense">💾 Guardar gasto</button>`);
+}
+function remindForm(client_id, kind) {
+  const c = cli(client_id), n = nextDue(client_id), sug = suggestion(client_id);
+  const text = fillTpl(TEMPLATES[kind], c, { servicio: n ? svc(n.last.service_id).name.toLowerCase() : "lavado", fecha: n ? fmtDate(n.due) : "", sugerido: sug ? sug.name.toLowerCase() : "un encerado" });
+  openModal("📲 Mensaje para " + esc(c.name.split(" ")[0]), "Revisa o edita el texto. Se abrirá WhatsApp con el mensaje listo.",
+    `<div class="tabs">${[["recordatorio", "🔔 Recordatorio"], ["sugerencia", "💡 Sugerencia"], ["lluvia", "🌧️ Temporada"]].map(([k, l]) => `<button type="button" aria-selected="${k === kind}" data-act="remind" data-id="${client_id}" data-k="${k}">${l}</button>`).join("")}</div>
+     <label class="f">Mensaje<textarea id="rText">${esc(text)}</textarea></label><p class="muted">Se enviará a 📞 ${esc(c.phone)}</p>`,
+    `<button class="btn btn-ghost" data-act="close">Cancelar</button><a class="btn btn-wa" target="_blank" rel="noopener" href="#" data-act="sendwa" data-id="${client_id}" data-k="${kind}">📲 Abrir WhatsApp</a>`);
+}
+function historyView(id) {
+  const c = cli(id), h = db.appts.filter(a => a.client_id === id).sort((a, b) => b.date.localeCompare(a.date));
+  const total = h.filter(a => a.status === "entregado").reduce((s, a) => s + Number(a.price), 0);
+  openModal("📜 " + esc(c.name), `${esc(c.vehicle)} · ${esc(c.plate)} · Ha gastado ${money(total)}`, `<div class="list">${h.length ? h.map(a => apptRow(a, { date: true })).join("") : empty("🧽", "Todavía sin servicios.")}</div>`,
+    `<button class="btn btn-ghost" data-act="close">Cerrar</button><button class="btn btn-primary" data-act="new" data-c="${id}">🚗 Agendar</button>`);
+}
+
+function ask(msg, yes) {
+  openModal("¿Seguro?", esc(msg), "", `<button class="btn btn-ghost" data-act="close">No, volver</button><button class="btn btn-danger" id="askYes">Sí, continuar</button>`);
+  document.getElementById("askYes").onclick = () => { closeModal(); yes(); };
+}
+// Shows the text to copy too, because the shared-link viewer blocks file downloads.
+function exportText(title, name, text, type) {
+  openModal(title, "Toca «Copiar» y pégalo en un correo, nota o Excel para guardarlo.", `<label class="f">Contenido<textarea id="exText" readonly>${esc(text)}</textarea></label>`,
+    `<button class="btn btn-ghost" data-act="dl">⬇️ Descargar archivo</button><button class="btn btn-primary" data-act="copyex">📋 Copiar</button>`);
+  modal.dataset.name = name; modal.dataset.type = type;
+}
+function download(name, text, type) { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); }
+/* ================= Acciones ================= */
+document.addEventListener("change", async e => {
+  const sel = e.target.closest("[data-assign]"); if (!sel) return;
+  const a = db.appts.find(x => x.id === sel.dataset.assign);
+  if (await put("appts", { ...a, worker_id: sel.value || null })) { sfx.pop(); toast(sel.value ? `👷 Asignado a ${staff(sel.value).name}` : "Quedó sin asignar"); }
+  modal.open ? historyView(a.client_id) : render();
+});
+document.addEventListener("click", e => {
+  const el = e.target.closest("[data-go],[data-act]"); if (!el) return;
+  if (el.dataset.go) { go(el.dataset.go); return; }
+  const { act, id } = el.dataset;
+  const A = {
+    close: closeModal,
+    new: () => wizard({ c: el.dataset.c, d: el.dataset.d }),
+    client: () => clientForm(id, el.dataset.from),
+    service: () => serviceForm(id),
+    expense: expenseForm,
+    history: () => historyView(id),
+    remind: () => remindForm(id, el.dataset.k),
+    remtab: () => { remTab = el.dataset.k; sfx.pop(); render(); },
+    day: () => { agendaDay = el.dataset.d; sfx.pop(); render(); },
+    week: () => { agendaDay = addDays(agendaDay, Number(el.dataset.n)); sfx.pop(); render(); },
+    today: () => { agendaDay = today(); render(); },
+    afilter: () => { agendaFilter = el.dataset.k; sfx.pop(); render(); },
+    mine: () => { agendaFilter = "mios"; agendaDay = today(); go("agenda"); },
+    logout: () => ask("¿Cerrar sesión en este equipo?", () => sb.auth.signOut()),
+    worker: () => workerForm(id),
+    saveworker: async () => {
+      const name = val("wName"), email = val("wEmail").toLowerCase();
+      if (!name || !/^\S+@\S+\.\S+$/.test(email)) { sfx.error(); toast("⚠️ Escribe nombre y un correo válido"); return; }
+      if (db.staff.some(w => w.email === email && w.id !== id)) { sfx.error(); toast("⚠️ Ese correo ya está en el equipo"); return; }
+      const old = db.staff.find(w => w.id === id) || {};
+      if (await put("staff", { ...old, id: id || uid(), name, email, role: val("wRole"), active: val("wActive") === "1" })) { burst(el); sfx.splash(); closeModal(); render(); toast("✅ Equipo actualizado"); }
+    },
+    wcli: () => { wiz.client_id = id; wiz.step = 1; sfx.pop(); drawWizard(); },
+    wsvc: () => { wiz.service_id = id; wiz.step = 2; sfx.pop(); drawWizard(); },
+    wslot: () => { wiz.time = el.dataset.t; sfx.pop(); drawWizard(); },
+    wback: () => { wiz.step--; drawWizard(); },
+    wnext: async () => {
+      if (wiz.step < 2) { wiz.step++; drawWizard(); return; }
+      if (wiz.worker_id && db.appts.some(a => a.date === wiz.date && a.time === wiz.time && a.worker_id === wiz.worker_id && a.status !== "cancelado")) { sfx.error(); toast(`⚠️ ${staff(wiz.worker_id).name} ya tiene un auto a esa hora`); return; }
+      el.disabled = true;
+      if (!(await put("appts", { id: uid(), client_id: wiz.client_id, service_id: wiz.service_id, worker_id: wiz.worker_id || null, date: wiz.date, time: wiz.time, status: "pendiente", price: svc(wiz.service_id).price }))) { el.disabled = false; return; }
+      burst(el); sfx.splash(); closeModal(); agendaDay = wiz.date; toast(`💧 Cita agendada: ${fmtDate(wiz.date)} ${wiz.time}`); render();
+    },
+    advance: async () => {
+      const a = db.appts.find(x => x.id === id), status = STATUS[STATUS.indexOf(a.status) + 1];
+      // whoever starts an unassigned wash takes it
+      el.disabled = true; if (!(await put("appts", { ...a, status, worker_id: a.worker_id || me.id }))) { el.disabled = false; return; }
+      burst(el);
+      ({ lavando: sfx.splash, listo: sfx.bubbles, entregado: sfx.chime })[status]();
+      toast({ lavando: "🫧 ¡A lavar!", listo: "✨ Auto listo, avisa al cliente", entregado: `✅ Cobrado ${money(a.price)}` }[status]);
+      modal.open ? historyView(a.client_id) : render();
+    },
+    cancel: () => ask("¿Cancelar esta cita?", async () => { if (await put("appts", { ...db.appts.find(x => x.id === id), status: "cancelado" })) { render(); toast("Cita cancelada"); } }),
+    saveclient: async () => {
+      const name = val("cName"), phone = val("cPhone");
+      if (!name || phone.replace(/\D/g, "").length < 7) { sfx.error(); toast("⚠️ Escribe nombre y un WhatsApp válido"); return; }
+      const data = { name, phone, vehicle: val("cVeh"), plate: val("cPlate").toUpperCase(), notes: val("cNotes") };
+      const cid = id || uid();
+      if (!(await put("clients", { ...db.clients.find(c => c.id === id), id: cid, ...data }))) return;
+      burst(el); sfx.splash(); toast("✅ Cliente guardado");
+      if (el.dataset.from === "wiz") { wiz.client_id = cid; wiz.step = 1; drawWizard(); render(); } else { closeModal(); render(); }
+    },
+    delclient: () => {
+      ask("¿Borrar este cliente y su historial? No se puede deshacer.", async () => { if (await del("clients", id)) { db.appts = db.appts.filter(a => a.client_id !== id); db.sent = db.sent.filter(x => x.client_id !== id); render(); toast("Cliente borrado"); } });
+    },
+    saveservice: async () => {
+      const price = Number(val("sPrice")); if (!val("sName") || !(price >= 0) || val("sPrice") === "") { sfx.error(); toast("⚠️ Falta nombre o precio"); return; }
+      const data = { name: val("sName"), icon: val("sIcon") || "🚿", price, minutes: Number(val("sMin")) || 30, every_days: Math.max(1, Number(val("sInt")) || 30) };
+      if (!(await put("services", { id: id || uid(), ...data }))) return;
+      burst(el); sfx.splash(); closeModal(); render(); toast("✅ Servicio guardado");
+    },
+    delservice: () => {
+      if (db.appts.some(a => a.service_id === id)) { sfx.error(); toast("⚠️ Tiene citas registradas; edítalo en vez de borrarlo"); return; }
+      ask("¿Borrar este servicio?", async () => { if (await del("services", id)) render(); });
+    },
+    saveexpense: async () => {
+      const amount = Number(val("eAmt")); if (!val("eCon") || !(amount > 0)) { sfx.error(); toast("⚠️ Escribe concepto y monto"); return; }
+      if (!(await put("expenses", { id: uid(), date: val("eDate") || today(), concept: val("eCon"), category: val("eCat"), amount }))) return; burst(el); sfx.splash(); closeModal(); render(); toast(`🧾 Gasto de ${money(amount)} registrado`);
+    },
+    delexp: () => ask("¿Borrar este gasto?", async () => { if (await del("expenses", id)) render(); }),
+    sendwa: () => {
+      const c = cli(id); el.href = waLink(c.phone, val("rText"));
+      put("sent", { id: uid(), client_id: id, date: today(), type: el.dataset.k }); sfx.chime(); toast("📲 Abriendo WhatsApp…");
+      setTimeout(() => { closeModal(); render(); }); // the link must stay in the page until the browser follows it
+    },
+    broadcast: () => {
+      const list = db.clients.filter(c => c.phone);
+      openModal("🌧️ Mensaje de temporada", "Edita el mensaje y envíalo uno por uno (WhatsApp no permite envío masivo desde la web).",
+        `<label class="f">Mensaje <small>({nombre} y {vehiculo} se cambian solos)</small><textarea id="bText">${esc(TEMPLATES.lluvia)}</textarea></label><div class="list">${list.map(c => `<div class="row"><div class="info"><b>${esc(c.name)}</b><small>${esc(c.vehicle)}</small></div><a class="btn btn-wa btn-sm" target="_blank" rel="noopener" href="#" data-act="bsend" data-id="${c.id}">📲 Enviar</a></div>`).join("")}</div>`,
+        `<button class="btn btn-ghost" data-act="close">Listo</button><span></span>`);
+    },
+    bsend: () => { const c = cli(id); el.href = waLink(c.phone, fillTpl(val("bText"), c)); put("sent", { id: uid(), client_id: id, date: today(), type: "temporada" }); el.textContent = "✓ Enviado"; sfx.pop(); },
+    savesettings: async () => { const cur = val("setCur").toUpperCase(); try { new Intl.NumberFormat("es", { style: "currency", currency: cur }); } catch { sfx.error(); toast("⚠️ Código de moneda no válido"); return; } if (!(await put("settings", { id: 1, name: val("setName") || "Autolavado", currency: cur, cc: val("setCC").replace(/\D/g, "") }))) return; burst(el); sfx.splash(); render(); toast("✅ Datos guardados"); },
+    backup: () => exportText("⬇️ Copia de seguridad", `respaldo-autolavado-${today()}.json`, JSON.stringify(db), "application/json"),
+    dl: () => download(modal.dataset.name, document.getElementById("exText").value, modal.dataset.type), // not val(): trim() would drop the BOM Excel needs
+    copyex: () => { const t = document.getElementById("exText"); navigator.clipboard.writeText(t.value).then(() => toast("📋 Copiado"), () => { t.select(); toast("Texto seleccionado: cópialo con Ctrl+C o mantén presionado"); }); },
+    csv: () => {
+      const rows = [["fecha", "tipo", "concepto", "monto"], ...db.appts.filter(a => a.status === "entregado").map(a => [a.date, "ingreso", `${svc(a.service_id).name} - ${cli(a.client_id).name}`, a.price]), ...db.expenses.map(x => [x.date, "gasto", `${x.concept} (${x.category})`, -x.amount])];
+      exportText("⬇️ Finanzas (CSV para Excel)", `finanzas-${today()}.csv`, "﻿" + rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n"), "text/csv");
+    },
+  };
+  if (A[act]) { if (!["advance", "wnext", "saveclient", "saveservice", "saveexpense", "sendwa", "savesettings", "remtab", "day", "week", "wcli", "wsvc", "wslot", "bsend"].includes(act)) sfx.pop(); A[act](); }
+});
+const toggleSound = () => { sound = !sound; try { localStorage.setItem("autolavado.sound", sound ? "1" : "0"); } catch {} renderNav(); sfx.bubbles(); };
+document.getElementById("soundBtn").onclick = toggleSound;
+document.getElementById("soundBtnM").onclick = toggleSound;
+document.getElementById("fab").onclick = e => { sfx.bubbles(); burst(e.currentTarget); wizard({ d: page === "agenda" ? agendaDay : undefined }); };
+addEventListener("hashchange", () => { const h = location.hash.slice(1); if (VIEWS[h] && h !== page) { page = h; render(); } });
+if (VIEWS[location.hash.slice(1)]) page = location.hash.slice(1);
+
+/* ================= Acceso ================= */
+const authEl = document.getElementById("auth"), authMsg = m => document.getElementById("authMsg").textContent = m;
+async function start() {
+  const { data, error } = await sb.rpc("whoami");
+  if (error || !data?.id) {
+    document.getElementById("authForm").hidden = true; document.getElementById("authOut").hidden = false;
+    authMsg(error ? "No se pudo conectar. Revisa tu internet y recarga la página." : "Tu correo aún no tiene acceso. Pídele al dueño que te agregue en «👷 Equipo» con este mismo correo.");
+    return;
+  }
+  me = data;
+  try { await loadAll(); } catch (err) { console.error(err); authMsg("No se pudieron cargar los datos. Recarga la página."); return; }
+  authEl.hidden = true; live(); render();
+  toast(`👋 Hola, ${me.name}`);
+}
+document.getElementById("authForm").onsubmit = async e => {
+  e.preventDefault(); const btn = document.getElementById("aLogin"); btn.disabled = true;
+  const { error } = await sb.auth.signInWithPassword({ email: val("aEmail"), password: document.getElementById("aPass").value });
+  btn.disabled = false;
+  if (error) { sfx.error(); authMsg(error.message.includes("confirm") ? "Primero confirma tu correo: te enviamos un enlace." : "Correo o contraseña incorrectos."); return; }
+  start();
+};
+document.getElementById("aSignup").onclick = async () => {
+  const email = val("aEmail"), password = document.getElementById("aPass").value;
+  if (!email || password.length < 6) { authMsg("Escribe tu correo y una contraseña de al menos 6 caracteres."); return; }
+  const { data, error } = await sb.auth.signUp({ email, password, options: { emailRedirectTo: location.origin + location.pathname } });
+  if (error) { sfx.error(); authMsg(error.message.includes("registered") ? "Ese correo ya tiene cuenta. Usa «Entrar»." : "No se pudo crear la cuenta: " + error.message); return; }
+  if (data.session) start(); else authMsg("✅ Cuenta creada. Abre el enlace que te enviamos por correo y después entra aquí.");
+};
+document.getElementById("aForgot").onclick = async () => {
+  const email = val("aEmail"); if (!email) { authMsg("Escribe tu correo arriba y vuelve a tocar «Olvidé mi contraseña»."); return; }
+  await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+  authMsg("📧 Si el correo existe, te llegó un enlace para crear una contraseña nueva.");
+};
+document.getElementById("aLogout").onclick = () => sb.auth.signOut();
+sb.auth.onAuthStateChange((ev, session) => {
+  if (ev === "SIGNED_OUT") location.reload();
+  if (ev === "PASSWORD_RECOVERY") {
+    openModal("🔑 Nueva contraseña", "Escribe tu nueva contraseña.", `<label class="f">Contraseña nueva<input id="newPass" type="password" minlength="6" autocomplete="new-password"></label>`,
+      `<span></span><button class="btn btn-primary" id="savePass">💾 Guardar</button>`);
+    document.getElementById("savePass").onclick = async () => {
+      const { error } = await sb.auth.updateUser({ password: document.getElementById("newPass").value });
+      if (error) { sfx.error(); toast("⚠️ Debe tener al menos 6 caracteres"); return; }
+      closeModal(); toast("✅ Contraseña actualizada"); start();
+    };
+  }
+});
+sb.auth.getSession().then(({ data }) => { if (data.session) start(); });
+
+/* Autoprueba de la lógica clave: abre la página con ?test y revisa la consola */
+if (location.search.includes("test")) {
+  const T = "2026-01-01", ap = [{ client_id: "x", service_id: "s1", date: T, status: "entregado", price: 100 }, { client_id: "x", service_id: "s1", date: "2026-01-05", status: "cancelado", price: 999 }];
+  console.assert(nextDue("x", ap).due === addDays(T, svc("s1").every_days), "nextDue usa el último entregado + intervalo");
+  console.assert(income("2026-01-01", "2026-01-31", ap) === 100, "ingresos ignoran citas canceladas");
+  console.assert(spend("2026-01-01", "2026-01-31", [{ date: "2026-01-10", amount: "50" }, { date: "2026-02-01", amount: 9 }]) === 50, "gastos por rango");
+  console.assert(addDays("2026-02-28", 1) === "2026-03-01" && diffDays("2026-03-01", "2026-02-28") === 1, "fechas");
+  console.assert(waLink("55 1234 5678", "hi").startsWith(`https://wa.me/${db.settings.cc}5512345678`), "whatsapp añade código país");
+  console.log("✅ autoprueba terminada");
+}
+</script>
+</body>
+</html>
