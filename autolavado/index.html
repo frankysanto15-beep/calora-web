@@ -926,7 +926,7 @@ document.getElementById("authForm").onsubmit = async e => {
   e.preventDefault(); const btn = document.getElementById("aLogin"); btn.disabled = true;
   const { error } = await sb.auth.signInWithPassword({ email: val("aEmail"), password: document.getElementById("aPass").value });
   btn.disabled = false;
-  if (error) { sfx.error(); authMsg(error.message.includes("confirm") ? "Primero confirma tu correo: te enviamos un enlace." : "Correo o contraseña incorrectos."); return; }
+  if (error) { sfx.error(); authMsg(error.message.includes("confirm") ? "Primero confirma tu correo: te enviamos un enlace." : "Correo o contraseña incorrectos. Si todavía no tienes cuenta, toca «Crear mi cuenta»."); return; }
   start();
 };
 document.getElementById("aSignup").onclick = async () => {
@@ -934,7 +934,7 @@ document.getElementById("aSignup").onclick = async () => {
   if (!email || password.length < 6) { authMsg("Escribe tu correo y una contraseña de al menos 6 caracteres."); return; }
   const { data, error } = await sb.auth.signUp({ email, password, options: { emailRedirectTo: location.origin + location.pathname } });
   if (error) { sfx.error(); authMsg(error.message.includes("registered") ? "Ese correo ya tiene cuenta. Usa «Entrar»." : "No se pudo crear la cuenta: " + error.message); return; }
-  if (data.session) start(); else authMsg("✅ Cuenta creada. Abre el enlace que te enviamos por correo y después entra aquí.");
+  if (data.session) start(); else authMsg(`✅ Cuenta creada. Te enviamos un enlace a ${email}: ábrelo y después vuelve aquí y toca «Entrar». Si el correo está mal escrito, vuelve a crear la cuenta con el correo correcto.`);
 };
 document.getElementById("aForgot").onclick = async () => {
   const email = val("aEmail"); if (!email) { authMsg("Escribe tu correo arriba y vuelve a tocar «Olvidé mi contraseña»."); return; }
