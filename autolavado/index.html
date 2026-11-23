@@ -34,6 +34,7 @@
   color-scheme: light;
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; } /* .auth sets display:grid, which would beat the hidden attribute */
 html, body { margin: 0; height: 100%; }
 body { background: var(--bg); color: var(--ink); font: 16px/1.5 var(--body); overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
 h1, h2, h3 { font-family: var(--display); line-height: 1.1; margin: 0; }
