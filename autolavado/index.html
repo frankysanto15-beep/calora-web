@@ -533,6 +533,8 @@ function viewInicio() {
   const days = [...Array(7)].map((_, i) => addDays(t, i - 6));
   const vals = days.map(d => income(d, d)), max = Math.max(...vals, 1);
   const mineToday = todays.filter(a => a.worker_id === me?.id).length;
+  const future = db.appts.filter(a => a.date > t && a.status !== "cancelado").sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+  const upcoming = future.slice(0, 6), moreUpcoming = future.length - upcoming.length;
   const kpi = (lbl, val, em, color) => `<div class="card kpi" style="--kc:${color}"><span class="em">${em}</span><div class="lbl">${lbl}</div><div class="val">${val}</div></div>`;
   return header() + `
   <div class="grid quick">
@@ -558,6 +560,8 @@ function viewInicio() {
       <div class="muted">Total semana: <b class="money-in">${money(vals.reduce((a, b) => a + b, 0))}</b></div>
     </div>` : `<div class="card"><h3>👷 Hoy por trabajador</h3>${byWorker(t, t)}</div>`}
   </div>
+  <div class="spacer"></div>
+  <div class="card"><h3>📅 Próximas citas</h3><div class="list">${upcoming.length ? upcoming.map(a => apptRow(a, { date: true })).join("") : empty("🗓️", "No hay citas para los próximos días.")}</div>${moreUpcoming ? `<div class="spacer"></div><button class="btn btn-ghost btn-sm" data-go="agenda">Ver todas en la agenda (${moreUpcoming} más)</button>` : ""}</div>
   ${isOwner() ? `<div class="spacer"></div><div class="card"><h3>👷 Hoy por trabajador</h3>${byWorker(t, t)}</div>` : ""}`;
 }
 
