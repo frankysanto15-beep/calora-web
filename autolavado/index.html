@@ -243,7 +243,7 @@ label.f small { font-weight: 600; color: var(--ink-soft); }
   .side { display: none; }
   .main { padding: 16px 16px 150px; }
   .mobile-head { display: flex !important; }
-  .mobile-nav { display: grid; grid-template-columns: repeat(6, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--brand-deep); padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); }
+  .mobile-nav { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--brand-deep); padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); }
   .mobile-nav button { border: 0; background: transparent; color: #cfe0ff; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 10.5px; font-weight: 800; padding: 6px 0; border-radius: 12px; cursor: pointer; }
   .mobile-nav button span { font-size: 20px; }
   .mobile-nav button[aria-current="page"] { color: #fff; background: rgba(255,255,255,.14); }
@@ -266,6 +266,16 @@ label.f small { font-weight: 600; color: var(--ink-soft); }
   .burst { display: none; }
 }
 @keyframes fade { from { opacity: 0; } }
+.auth { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 16px; overflow: auto; background: linear-gradient(160deg, var(--brand-deep) 0 55%, #0b3d6e 85%, var(--brand)); }
+.auth .card { width: min(420px, 100%); text-align: center; }
+.auth img { width: 120px; height: 120px; border-radius: 26px; }
+.auth h1 { font-size: 26px; margin: 10px 0 2px; }
+.auth form { text-align: left; margin-top: 14px; }
+.auth .btns { display: flex; flex-direction: column; gap: 8px; }
+.linkbtn { border: 0; background: none; color: var(--brand); font-weight: 800; cursor: pointer; padding: 6px; }
+.assign { border: 1.5px solid var(--line); background: #fff; border-radius: 999px; padding: 6px 10px; font-weight: 700; font-size: 13.5px; max-width: 170px; }
+.who { display: inline-flex; align-items: center; gap: 4px; font-weight: 800; color: var(--brand); }
+.me-chip { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -278,6 +288,7 @@ label.f small { font-weight: 600; color: var(--ink-soft); }
     <div class="logo"><span data-logo></span><div><b data-bizname>Autolavado</b><small>Panel de gestión ★★★★★</small></div></div>
     <nav class="nav" id="nav" aria-label="Menú principal"></nav>
     <div class="side-foot">
+      <button class="chip-btn me-chip" type="button" data-act="logout" id="meChip" title="Cerrar sesión"></button>
       <button class="chip-btn" id="soundBtn" type="button"></button>
       <button class="chip-btn" type="button" data-go="ayuda">❓ Ayuda</button>
     </div>
@@ -295,15 +306,30 @@ label.f small { font-weight: 600; color: var(--ink-soft); }
 
 <nav class="mobile-nav" id="mnav" aria-label="Menú"></nav>
 <button class="btn btn-accent fab" id="fab" type="button"><span class="drop">💧</span> Agendar servicio</button>
+<div class="auth" id="auth">
+  <div class="card">
+    <img src="logo.jpg" alt="Lucho Detailing &amp; Car Wash">
+    <h1>Panel de Lucho Car Wash</h1>
+    <p class="muted" id="authMsg">Entra con tu correo y contraseña.</p>
+    <form id="authForm">
+      <label class="f">Correo<input id="aEmail" type="email" autocomplete="email" required></label>
+      <label class="f">Contraseña <small>(mínimo 6 caracteres)</small><input id="aPass" type="password" autocomplete="current-password" minlength="6" required></label>
+      <div class="btns"><button class="btn btn-primary" type="submit" id="aLogin">Entrar</button><button class="btn btn-ghost" type="button" id="aSignup">Crear mi cuenta</button><button class="linkbtn" type="button" id="aForgot">Olvidé mi contraseña</button></div>
+    </form>
+    <div id="authOut" hidden><div class="spacer"></div><button class="btn btn-ghost" type="button" id="aLogout">Salir y usar otro correo</button></div>
+  </div>
+</div>
 <div id="toasts" aria-live="polite"></div>
 <dialog id="modal"></dialog>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
 "use strict";
-/* ================= Datos (guardados en este navegador) ================= */
-// shortcut: localStorage = datos solo en este equipo/navegador; pasar a un backend (p. ej. Supabase) si varias personas o equipos deben compartirlos.
-const KEY = "autolavado.v1";
-const uid = () => Math.random().toString(36).slice(2, 10);
+/* ================= Datos (base compartida en Supabase) ================= */
+const SUPABASE_URL = "https://ljidglkyrfjtliutudpv.supabase.co";
+const SUPABASE_KEY = "sb_publishable_x-tLMI4jHk8RSqZ0tH4jKw_H3-921HL"; // public key: access is enforced by row-level security in the database
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const uid = () => crypto.randomUUID();
 const pad = n => String(n).padStart(2, "0");
 const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 const parse = s => { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); };
@@ -311,14 +337,6 @@ const addDays = (s, n) => { const d = parse(s); d.setDate(d.getDate() + n); retu
 const diffDays = (a, b) => Math.round((parse(a) - parse(b)) / 864e5);
 const today = () => ymd(new Date());
 
-const DEFAULT_SERVICES = [
-  { id: "s1", name: "Lavado exprés", icon: "🚿", price: 120, minutes: 30, interval: 15 },
-  { id: "s2", name: "Lavado completo", icon: "🧽", price: 220, minutes: 60, interval: 21 },
-  { id: "s3", name: "Lavado + encerado", icon: "✨", price: 380, minutes: 90, interval: 45 },
-  { id: "s4", name: "Detallado interior", icon: "🪑", price: 650, minutes: 150, interval: 90 },
-  { id: "s5", name: "Lavado de motor", icon: "⚙️", price: 300, minutes: 45, interval: 120 },
-  { id: "s6", name: "Pulido de faros", icon: "💡", price: 280, minutes: 40, interval: 180 },
-];
 const TEMPLATES = {
   recordatorio: "¡Hola {nombre}! 👋 Te escribimos de {negocio}. Tu {vehiculo} ya está listo para su próximo {servicio} 🚿 (le tocaba el {fecha}). ¿Te agendamos? Responde con el día y la hora que prefieras. 🫧",
   sugerencia: "¡Hola {nombre}! 🫧 En {negocio} notamos que tu {vehiculo} no ha tenido {sugerido} en un tiempo. Protege la pintura y luce como nuevo ✨ ¿Te apartamos un espacio esta semana?",
@@ -328,36 +346,43 @@ const TEMPLATES = {
 const STATUS = ["pendiente", "lavando", "listo", "entregado"];
 const STATUS_LABEL = { pendiente: "⏳ Pendiente", lavando: "🫧 Lavando", listo: "✨ Listo", entregado: "✅ Entregado", cancelado: "✖ Cancelado" };
 const EXP_CATS = ["Insumos (shampoo, cera)", "Agua y luz", "Sueldos", "Renta", "Mantenimiento equipo", "Publicidad", "Otro"];
+const TABLES = ["staff", "services", "clients", "appts", "expenses", "sent"];
 
-function seed() {
-  const t = today();
-  const clients = [
-    { id: "c1", name: "María López", phone: "5512345678", vehicle: "Mazda 3 rojo", plate: "ABC-123", notes: "" },
-    { id: "c2", name: "Carlos Ruiz", phone: "5523456789", vehicle: "Toyota Hilux blanca", plate: "XYZ-987", notes: "Prefiere sábados" },
-    { id: "c3", name: "Ana Torres", phone: "5534567890", vehicle: "Kia Rio gris", plate: "JKL-456", notes: "" },
-    { id: "c4", name: "Jorge Méndez", phone: "5545678901", vehicle: "Jeep Wrangler negro", plate: "MNO-321", notes: "Muy lodoso" },
-    { id: "c5", name: "Lucía Paredes", phone: "5556789012", vehicle: "Nissan Versa azul", plate: "PQR-654", notes: "" },
-    { id: "c6", name: "Pedro Salas", phone: "5567890123", vehicle: "Chevrolet Aveo blanco", plate: "STU-852", notes: "" },
-  ];
-  const a = (c, s, d, time, status) => ({ id: uid(), clientId: c, serviceId: s, date: addDays(t, d), time, status, price: DEFAULT_SERVICES.find(x => x.id === s).price });
-  const appts = [
-    a("c1", "s2", -24, "10:00", "entregado"), a("c2", "s1", -18, "09:00", "entregado"), a("c3", "s3", -50, "12:00", "entregado"),
-    a("c4", "s2", -6, "11:00", "entregado"), a("c2", "s4", -3, "16:00", "entregado"), a("c1", "s1", -2, "13:00", "entregado"),
-    a("c3", "s1", -1, "10:30", "entregado"), a("c4", "s5", 0, "09:00", "entregado"),
-    a("c1", "s3", 0, "11:00", "lavando"), a("c2", "s2", 0, "15:00", "pendiente"), a("c3", "s6", 1, "10:00", "pendiente"),
-    a("c5", "s2", -26, "12:00", "entregado"), a("c6", "s1", -10, "17:00", "entregado"), a("c5", "s1", -40, "09:30", "entregado"),
-  ];
-  const expenses = [
-    { id: uid(), date: addDays(t, -5), concept: "Shampoo y cera (galones)", category: EXP_CATS[0], amount: 540 },
-    { id: uid(), date: addDays(t, -2), concept: "Recibo de agua", category: EXP_CATS[1], amount: 380 },
-  ];
-  return { settings: { name: "Lucho Detailing & Car Wash", currency: "MXN", cc: "52", sound: true, demo: true }, services: DEFAULT_SERVICES, clients, appts, expenses, sent: [] };
+let db = { settings: { name: "Lucho Detailing & Car Wash", currency: "MXN", cc: "52" }, staff: [], services: [], clients: [], appts: [], expenses: [], sent: [] };
+let me = null; // fila de staff de quien está conectado
+const isOwner = () => me?.role === "owner";
+let sound = true; try { sound = localStorage.getItem("autolavado.sound") !== "0"; } catch {}
+
+// shortcut: loads every row at sign-in; fine for one car wash (thousands of rows), page by date if it ever gets slow.
+async function loadAll() {
+  const res = await Promise.all([...TABLES.map(t => sb.from(t).select("*")), sb.from("settings").select("*").single()]);
+  const bad = res.find(r => r.error); if (bad) throw bad.error;
+  TABLES.forEach((t, i) => db[t] = res[i].data.map(norm));
+  db.settings = res[TABLES.length].data;
 }
-function load() { try { const d = JSON.parse(localStorage.getItem(KEY)); if (d && d.services) return d; } catch {} return seed(); }
-let db = load();
-function save() { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch { toast("⚠️ No se pudo guardar en este navegador"); } }
+const norm = r => ({ ...r, ...(r.price != null && { price: Number(r.price) }), ...(r.amount != null && { amount: Number(r.amount) }), ...(r.time && { time: r.time.slice(0, 5) }) });
+function applyLocal(t, row, del) {
+  if (t === "settings") { if (!del) db.settings = row; return; }
+  const list = db[t], i = list.findIndex(x => x.id === row.id);
+  if (del) { if (i >= 0) list.splice(i, 1); } else if (i >= 0) list[i] = { ...list[i], ...norm(row) }; else list.push(norm(row));
+}
+function failed(error) { console.error(error); sfx.error(); toast("⚠️ No se guardó: " + (error.code === "42501" ? "no tienes permiso para esto" : "revisa tu conexión e inténtalo de nuevo")); }
+// Every write goes to the database first; the screen updates only if it was saved.
+async function put(t, row) { const { error } = await sb.from(t).upsert(row); if (error) { failed(error); return false; } applyLocal(t, row); return true; }
+async function del(t, id) { const { error } = await sb.from(t).delete().eq("id", id); if (error) { failed(error); return false; } applyLocal(t, { id }, true); return true; }
 
-const svc = id => db.services.find(s => s.id === id) || { name: "Servicio", icon: "🚗", price: 0, interval: 30 };
+let renderTimer;
+function live() {
+  sb.channel("todo").on("postgres_changes", { event: "*", schema: "public" }, p => {
+    applyLocal(p.table, p.eventType === "DELETE" ? p.old : p.new, p.eventType === "DELETE");
+    clearTimeout(renderTimer); renderTimer = setTimeout(() => { if (!document.querySelector(".main input:focus")) render(); }, 250);
+  }).subscribe();
+}
+
+const staff = id => db.staff.find(w => w.id === id);
+const workers = () => db.staff.filter(w => w.active);
+const assignSelect = a => `<select class="assign" data-assign="${a.id}" aria-label="Trabajador asignado"><option value="">👷 Sin asignar</option>${workers().map(w => `<option value="${w.id}" ${w.id === a.worker_id ? "selected" : ""}>👷 ${esc(w.name)}</option>`).join("")}${a.worker_id && !staff(a.worker_id)?.active ? `<option selected>👷 ${esc(staff(a.worker_id)?.name || "Ex trabajador")}</option>` : ""}</select>`;
+const svc = id => db.services.find(s => s.id === id) || { name: "Servicio", icon: "🚗", price: 0, every_days: 30 };
 const cli = id => db.clients.find(c => c.id === id) || { name: "Cliente", vehicle: "", phone: "" };
 const money = n => new Intl.NumberFormat("es-MX", { style: "currency", currency: db.settings.currency || "MXN", maximumFractionDigits: 0 }).format(n || 0);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -365,22 +390,22 @@ const fmtDate = s => parse(s).toLocaleDateString("es-MX", { weekday: "short", da
 
 /* ================= Lógica de negocio ================= */
 // Next service due = last delivered wash + that service's recommended interval.
-function nextDue(clientId, appts = db.appts) {
-  const done = appts.filter(a => a.clientId === clientId && a.status === "entregado").sort((a, b) => b.date.localeCompare(a.date));
+function nextDue(client_id, appts = db.appts) {
+  const done = appts.filter(a => a.client_id === client_id && a.status === "entregado").sort((a, b) => b.date.localeCompare(a.date));
   if (!done.length) return null;
   const last = done[0];
-  const upcoming = appts.some(a => a.clientId === clientId && a.date >= today() && (a.status === "pendiente" || a.status === "lavando"));
-  return { last, due: addDays(last.date, svc(last.serviceId).interval), booked: upcoming };
+  const upcoming = appts.some(a => a.client_id === client_id && a.date >= today() && (a.status === "pendiente" || a.status === "lavando"));
+  return { last, due: addDays(last.date, svc(last.service_id).every_days), booked: upcoming };
 }
 function income(from, to, appts = db.appts) { return appts.filter(a => a.status === "entregado" && a.date >= from && a.date <= to).reduce((s, a) => s + Number(a.price || 0), 0); }
 function spend(from, to, exps = db.expenses) { return exps.filter(e => e.date >= from && e.date <= to).reduce((s, e) => s + Number(e.amount || 0), 0); }
 // Suggest a premium service the client hasn't had in 2x its interval.
-function suggestion(clientId) {
-  const hist = db.appts.filter(a => a.clientId === clientId && a.status === "entregado");
+function suggestion(client_id) {
+  const hist = db.appts.filter(a => a.client_id === client_id && a.status === "entregado");
   if (!hist.length) return null;
   for (const s of [...db.services].sort((a, b) => b.price - a.price)) {
-    const last = hist.filter(a => a.serviceId === s.id).sort((a, b) => b.date.localeCompare(a.date))[0];
-    if (!last || diffDays(today(), last.date) > s.interval * 2) return s;
+    const last = hist.filter(a => a.service_id === s.id).sort((a, b) => b.date.localeCompare(a.date))[0];
+    if (!last || diffDays(today(), last.date) > s.every_days * 2) return s;
   }
   return null;
 }
@@ -395,7 +420,7 @@ function waLink(phone, text) {
 
 /* ================= Sonidos (sintetizados, sin archivos) ================= */
 let ac;
-function audio() { if (!db.settings.sound) return null; try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === "suspended") ac.resume(); return ac; } catch { return null; } }
+function audio() { if (!sound) return null; try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === "suspended") ac.resume(); return ac; } catch { return null; } }
 function tone(freq, end, dur, type = "sine", vol = .15, delay = 0) {
   const c = audio(); if (!c) return;
   const t = c.currentTime + delay, o = c.createOscillator(), g = c.createGain();
@@ -457,17 +482,20 @@ const PAGES = [
   { id: "agenda", icon: "📅", label: "Agenda", sub: "Citas y estado del lavado", hint: "Elige un día arriba. Toca «Siguiente paso» para mover cada auto: Pendiente → Lavando → Listo → Entregado." },
   { id: "clientes", icon: "👥", label: "Clientes", sub: "Personas y vehículos", hint: "Registra a tus clientes y su vehículo. Toca uno para ver su historial." },
   { id: "recordatorios", icon: "🔔", label: "Recordatorios", sub: "Avisos y sugerencias", hint: "Te mostramos quién ya necesita su siguiente lavado. Toca «WhatsApp» y el mensaje se abre listo para enviar." },
-  { id: "finanzas", icon: "💰", label: "Finanzas", sub: "Ingresos y gastos", hint: "Los ingresos se suman solos cuando marcas un servicio como «Entregado». Aquí registra tus gastos." },
-  { id: "servicios", icon: "🧴", label: "Servicios", sub: "Precios y frecuencia", hint: "Define tus servicios, precio y cada cuántos días conviene repetirlos (para los recordatorios)." },
+  { id: "finanzas", own: true, icon: "💰", label: "Finanzas", sub: "Ingresos y gastos", hint: "Los ingresos se suman solos cuando marcas un servicio como «Entregado». Aquí registra tus gastos." },
+  { id: "servicios", own: true, icon: "🧴", label: "Servicios", sub: "Precios y frecuencia", hint: "Define tus servicios, precio y cada cuántos días conviene repetirlos (para los recordatorios)." },
+  { id: "equipo", own: true, icon: "👷", label: "Equipo", sub: "Trabajadores y accesos", hint: "Agrega a cada trabajador con su correo. Luego esa persona entra con «Crear mi cuenta» usando ese mismo correo." },
 ];
+const pages = () => PAGES.filter(p => !p.own || isOwner());
 let page = "inicio";
 let agendaDay = today();
+let agendaFilter = "todos";
 
 function renderNav() {
-  document.getElementById("nav").innerHTML = PAGES.map(p => `<button type="button" data-go="${p.id}" ${p.id === page ? 'aria-current="page"' : ""}><span class="ico">${p.icon}</span><span><b>${p.label}</b><small>${p.sub}</small></span></button>`).join("");
-  document.getElementById("mnav").innerHTML = PAGES.map(p => `<button type="button" data-go="${p.id}" ${p.id === page ? 'aria-current="page"' : ""}><span>${p.icon}</span>${p.label}</button>`).join("");
-  const s = db.settings.sound ? "🔊 Sonido" : "🔇 Silencio";
-  document.getElementById("soundBtn").textContent = s; document.getElementById("soundBtnM").textContent = db.settings.sound ? "🔊" : "🔇";
+  document.getElementById("nav").innerHTML = pages().map(p => `<button type="button" data-go="${p.id}" ${p.id === page ? 'aria-current="page"' : ""}><span class="ico">${p.icon}</span><span><b>${p.label}</b><small>${p.sub}</small></span></button>`).join("");
+  document.getElementById("mnav").innerHTML = pages().map(p => `<button type="button" data-go="${p.id}" ${p.id === page ? 'aria-current="page"' : ""}><span>${p.icon}</span>${p.label}</button>`).join("");
+  document.getElementById("soundBtn").textContent = sound ? "🔊" : "🔇"; document.getElementById("soundBtnM").textContent = sound ? "🔊" : "🔇";
+  document.getElementById("meChip").textContent = `👤 ${me?.name || ""} · Salir`;
   document.querySelectorAll("[data-bizname]").forEach(e => e.textContent = db.settings.name);
   document.querySelectorAll("[data-logo]").forEach(e => { if (!e.firstChild) e.appendChild(document.getElementById("logoTpl").content.cloneNode(true)); });
 }
@@ -479,7 +507,7 @@ function header(extraBtn = "") {
 
 /* ================= Vistas ================= */
 function apptRow(a, opts = {}) {
-  const c = cli(a.clientId), s = svc(a.serviceId), i = STATUS.indexOf(a.status);
+  const c = cli(a.client_id), s = svc(a.service_id), i = STATUS.indexOf(a.status);
   const next = i >= 0 && i < 3 ? STATUS[i + 1] : null;
   const nextLbl = { lavando: "🫧 Empezar lavado", listo: "✨ Marcar listo", entregado: "✅ Entregar y cobrar" }[next];
   return `<div class="row ${a.status === "lavando" ? "washing" : ""}">
@@ -487,6 +515,7 @@ function apptRow(a, opts = {}) {
     <div class="info"><b>${a.time} · ${esc(c.name)}</b><small>${esc(s.name)} · ${esc(c.vehicle)} ${c.plate ? "· " + esc(c.plate) : ""}${opts.date ? " · " + fmtDate(a.date) : ""}</small></div>
     <span class="tag st-${a.status}">${STATUS_LABEL[a.status]}</span><b>${money(a.price)}</b>
     <div class="acts">
+      ${a.status === "entregado" || a.status === "cancelado" ? `<span class="who">👷 ${esc(staff(a.worker_id)?.name || "Sin asignar")}</span>` : assignSelect(a)}
       ${next ? `<button class="btn btn-primary btn-sm" data-act="advance" data-id="${a.id}">${nextLbl}</button>` : ""}
       ${a.status === "listo" ? `<a class="btn btn-wa btn-sm" target="_blank" rel="noopener" href="${waLink(c.phone, fillTpl(TEMPLATES.listo, c))}">📲 Avisar</a>` : ""}
       ${a.status === "pendiente" ? `<button class="btn btn-ghost btn-sm" data-act="cancel" data-id="${a.id}" aria-label="Cancelar cita">✖</button>` : ""}
@@ -502,38 +531,42 @@ function viewInicio() {
   const dueCount = db.clients.filter(c => { const n = nextDue(c.id); return n && !n.booked && n.due <= addDays(t, 3); }).length;
   const days = [...Array(7)].map((_, i) => addDays(t, i - 6));
   const vals = days.map(d => income(d, d)), max = Math.max(...vals, 1);
+  const mineToday = todays.filter(a => a.worker_id === me?.id).length;
   const kpi = (lbl, val, em, color) => `<div class="card kpi" style="--kc:${color}"><span class="em">${em}</span><div class="lbl">${lbl}</div><div class="val">${val}</div></div>`;
   return header() + `
   <div class="grid quick">
     <button class="qa" style="--c1:#0077d6;--c2:#0097fe" data-act="new"><span class="e">🚗</span><b>Agendar servicio</b><small>Nueva cita en 3 pasos</small></button>
     <button class="qa" style="--c1:#7b5cff;--c2:#b48bff" data-go="agenda"><span class="e">🫧</span><b>Autos de hoy</b><small>${todays.filter(a => a.status !== "entregado").length} en fila</small></button>
     <button class="qa" style="--c1:#e0b800;--c2:#ffe81a;color:#121317" data-go="recordatorios"><span class="e">🔔</span><b>Recordar clientes</b><small>${dueCount} por avisar</small></button>
-    <button class="qa" style="--c1:#0fa968;--c2:#4fd6a0" data-act="expense"><span class="e">🧾</span><b>Registrar gasto</b><small>Insumos, agua, sueldos…</small></button>
+    ${isOwner() ? `<button class="qa" style="--c1:#0fa968;--c2:#4fd6a0" data-act="expense"><span class="e">🧾</span><b>Registrar gasto</b><small>Insumos, agua, sueldos…</small></button>`
+      : `<button class="qa" style="--c1:#0fa968;--c2:#4fd6a0" data-act="mine"><span class="e">👷</span><b>Mis servicios</b><small>${mineToday} asignados hoy</small></button>`}
   </div>
   <div class="spacer"></div>
   <div class="grid kpis">
     ${kpi("Citas hoy", todays.length, "📅", "#14c8ff")}
     ${kpi("Lavando ahora", todays.filter(a => a.status === "lavando").length, "🫧", "#7b5cff")}
-    ${kpi("Ingresos hoy", money(income(t, t)), "💵", "#16b67a")}
-    ${kpi("Balance del mes", money(income(monthStart, t) - spend(monthStart, t)), "📈", "#ffc928")}
+    ${isOwner() ? kpi("Ingresos hoy", money(income(t, t)), "💵", "#16b67a") : kpi("Mis servicios hoy", mineToday, "👷", "#16b67a")}
+    ${isOwner() ? kpi("Balance del mes", money(income(monthStart, t) - spend(monthStart, t)), "📈", "#ffc928") : kpi("Sin asignar hoy", todays.filter(a => !a.worker_id && a.status !== "entregado").length, "🙋", "#ffc928")}
   </div>
   <div class="spacer"></div>
   <div class="grid two">
     <div class="card"><h3>🚿 Fila de hoy</h3><div class="list">${todays.length ? todays.map(a => apptRow(a)).join("") : empty("🧽", "No hay citas para hoy.", '<button class="btn btn-primary" data-act="new">Agendar la primera</button>')}</div></div>
-    <div class="card"><h3>📊 Ingresos últimos 7 días</h3>
+    ${isOwner() ? `<div class="card"><h3>📊 Ingresos últimos 7 días</h3>
       <div class="chart" role="img" aria-label="Gráfica de ingresos de los últimos 7 días">${days.map((d, i) => `<div class="bar"><div class="col" data-v="${money(vals[i])}" style="height:${Math.max(4, (vals[i] / max) * 100)}%;animation-delay:${i * 50}ms"></div><span>${parse(d).toLocaleDateString("es-MX", { weekday: "short" })}</span></div>`).join("")}</div>
       <div class="spacer"></div>
       <div class="muted">Total semana: <b class="money-in">${money(vals.reduce((a, b) => a + b, 0))}</b></div>
-    </div>
+    </div>` : `<div class="card"><h3>👷 Hoy por trabajador</h3>${byWorker(t, t)}</div>`}
   </div>
-  ${db.settings.demo ? `<div class="spacer"></div><div class="card" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><span style="font-size:26px">🧪</span><div style="flex:1 1 220px"><b>Estás viendo datos de ejemplo.</b><div class="muted">Cuando quieras empezar en serio, bórralos y registra tus propios clientes.</div></div><button class="btn btn-danger" data-act="cleardemo">Borrar datos de ejemplo</button></div>` : ""}`;
+  ${isOwner() ? `<div class="spacer"></div><div class="card"><h3>👷 Hoy por trabajador</h3>${byWorker(t, t)}</div>` : ""}`;
 }
 
 function viewAgenda() {
   const start = addDays(agendaDay, -((parse(agendaDay).getDay() + 6) % 7)); // lunes
   const week = [...Array(7)].map((_, i) => addDays(start, i));
-  const list = db.appts.filter(a => a.date === agendaDay).sort((a, b) => a.time.localeCompare(b.time));
+  const keep = { todos: () => true, mios: a => a.worker_id === me?.id, libres: a => !a.worker_id }[agendaFilter];
+  const list = db.appts.filter(a => a.date === agendaDay && keep(a)).sort((a, b) => a.time.localeCompare(b.time));
   return header(`<button class="btn btn-ghost" data-act="today">Hoy</button>`) + `
+  <div class="tabs" role="tablist">${[["todos", "Todos"], ["mios", "👷 Mis servicios"], ["libres", "🙋 Sin asignar"]].map(([k, l]) => `<button role="tab" aria-selected="${agendaFilter === k}" data-act="afilter" data-k="${k}">${l}</button>`).join("")}</div>
   <div class="week">
     <button class="arrow" data-act="week" data-n="-7" aria-label="Semana anterior">◀</button>
     ${week.map(d => { const n = db.appts.filter(a => a.date === d && a.status !== "cancelado").length; return `<button class="day ${d === today() ? "today" : ""}" aria-pressed="${d === agendaDay}" data-act="day" data-d="${d}"><small>${parse(d).toLocaleDateString("es-MX", { weekday: "short" })}</small><b>${parse(d).getDate()}</b><div class="dots">${"<i></i>".repeat(Math.min(n, 4))}</div></button>`; }).join("")}
@@ -554,7 +587,7 @@ function clientRows(q) {
   const rows = db.clients.filter(c => (c.name + c.plate + c.vehicle).toLowerCase().includes(q));
   if (!rows.length) return empty("👤", q ? "Nadie coincide con la búsqueda." : "Aún no tienes clientes.", '<button class="btn btn-primary" data-act="client">Agregar cliente</button>');
   return rows.map(c => {
-    const n = nextDue(c.id), visits = db.appts.filter(a => a.clientId === c.id && a.status === "entregado").length;
+    const n = nextDue(c.id), visits = db.appts.filter(a => a.client_id === c.id && a.status === "entregado").length;
     return `<div class="row"><div class="av">🚘</div><div class="info"><b>${esc(c.name)}</b><small>${esc(c.vehicle)} · ${esc(c.plate)} · 📞 ${esc(c.phone)}</small><small>${visits} visitas${n ? " · próximo lavado: " + fmtDate(n.due) : ""}</small></div>
     <div class="acts"><button class="btn btn-ghost btn-sm" data-act="history" data-id="${c.id}">📜 Historial</button><button class="btn btn-ghost btn-sm" data-act="client" data-id="${c.id}">✏️ Editar</button><button class="btn btn-primary btn-sm" data-act="new" data-c="${c.id}">🚗 Agendar</button></div></div>`;
   }).join("");
@@ -569,7 +602,7 @@ function viewRecordatorios() {
     semana: items.filter(x => x.n.due > t && x.n.due <= addDays(t, 7)),
     sugerencias: items.filter(x => x.sug),
   };
-  const lastSent = id => db.sent.filter(s => s.clientId === id).sort((a, b) => b.date.localeCompare(a.date))[0];
+  const lastSent = id => db.sent.filter(s => s.client_id === id).sort((a, b) => b.date.localeCompare(a.date))[0];
   const list = groups[remTab];
   return header(`<button class="btn btn-ghost" data-act="broadcast">🌧️ Mensaje a todos</button>`) + `
   <div class="tabs" role="tablist">
@@ -577,7 +610,7 @@ function viewRecordatorios() {
   </div>
   <div class="card"><div class="list">${list.length ? list.map(({ c, n, sug }) => {
     const ls = lastSent(c.id), late = diffDays(t, n.due);
-    const detail = remTab === "sugerencias" ? `Sugerir: ${sug.icon} ${esc(sug.name)}` : `Último: ${esc(svc(n.last.serviceId).name)} el ${fmtDate(n.last.date)} · ${late > 0 ? `<b class="money-out">hace ${late} días le tocaba</b>` : late === 0 ? "<b>le toca hoy</b>" : `le toca en ${-late} días`}`;
+    const detail = remTab === "sugerencias" ? `Sugerir: ${sug.icon} ${esc(sug.name)}` : `Último: ${esc(svc(n.last.service_id).name)} el ${fmtDate(n.last.date)} · ${late > 0 ? `<b class="money-out">hace ${late} días le tocaba</b>` : late === 0 ? "<b>le toca hoy</b>" : `le toca en ${-late} días`}`;
     return `<div class="row"><div class="av">${remTab === "sugerencias" ? "💡" : "🔔"}</div><div class="info"><b>${esc(c.name)} · ${esc(c.vehicle)}</b><small>${detail}</small>${ls ? `<small>✉️ Avisado el ${fmtDate(ls.date)}</small>` : ""}</div>
       <div class="acts"><button class="btn btn-wa btn-sm" data-act="remind" data-id="${c.id}" data-k="${remTab === "sugerencias" ? "sugerencia" : "recordatorio"}">📲 WhatsApp</button><button class="btn btn-primary btn-sm" data-act="new" data-c="${c.id}">🚗 Agendar</button></div></div>`;
   }).join("") : empty("🎉", "Nadie pendiente en esta lista. ¡Todo al día!")}</div></div>`;
@@ -589,7 +622,7 @@ function viewFinanzas() {
   const inc = months.map(m => income(...range(m))), out = months.map(m => spend(...range(m))), max = Math.max(...inc, ...out, 1);
   const [ms, me] = range(months[5]);
   const moves = [
-    ...db.appts.filter(a => a.status === "entregado" && a.date >= ms && a.date <= me).map(a => ({ date: a.date, txt: `${svc(a.serviceId).icon} ${svc(a.serviceId).name} · ${cli(a.clientId).name}`, amt: Number(a.price) })),
+    ...db.appts.filter(a => a.status === "entregado" && a.date >= ms && a.date <= me).map(a => ({ date: a.date, txt: `${svc(a.service_id).icon} ${svc(a.service_id).name} · ${cli(a.client_id).name}`, amt: Number(a.price) })),
     ...db.expenses.filter(e => e.date >= ms && e.date <= me).map(e => ({ date: e.date, txt: `🧾 ${e.concept} · ${e.category}`, amt: -Number(e.amount), id: e.id })),
   ].sort((a, b) => b.date.localeCompare(a.date));
   const cats = {}; db.expenses.filter(e => e.date >= ms && e.date <= me).forEach(e => cats[e.category] = (cats[e.category] || 0) + Number(e.amount));
@@ -612,28 +645,58 @@ function viewFinanzas() {
 
 function viewServicios() {
   return header(`<button class="btn btn-primary" data-act="service">➕ Nuevo servicio</button>`) + `
-  <div class="grid quick">${db.services.map(s => `<div class="card"><div style="font-size:34px">${s.icon}</div><h3 style="margin:6px 0 4px">${esc(s.name)}</h3><div class="val" style="font:800 26px var(--display);color:var(--brand)">${money(s.price)}</div><div class="muted">⏱️ ${s.minutes} min · 🔁 cada ${s.interval} días</div><div class="spacer"></div><button class="btn btn-ghost btn-sm" data-act="service" data-id="${s.id}">✏️ Editar</button></div>`).join("")}</div>
+  <div class="grid quick">${db.services.map(s => `<div class="card"><div style="font-size:34px">${s.icon}</div><h3 style="margin:6px 0 4px">${esc(s.name)}</h3><div class="val" style="font:800 26px var(--display);color:var(--brand)">${money(s.price)}</div><div class="muted">⏱️ ${s.minutes} min · 🔁 cada ${s.every_days} días</div><div class="spacer"></div><button class="btn btn-ghost btn-sm" data-act="service" data-id="${s.id}">✏️ Editar</button></div>`).join("")}</div>
   <div class="spacer"></div>
   <div class="card"><h3>⚙️ Datos del negocio</h3>
     <div class="cols"><label class="f">Nombre del autolavado<input id="setName" value="${esc(db.settings.name)}"></label>
     <label class="f">Moneda <small>(código, ej. MXN, USD, PEN, COP)</small><input id="setCur" value="${esc(db.settings.currency)}" maxlength="3"></label>
     <label class="f">Código de país para WhatsApp <small>(ej. 52 México, 51 Perú, 57 Colombia)</small><input id="setCC" inputmode="numeric" value="${esc(db.settings.cc)}"></label></div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-primary" data-act="savesettings">💾 Guardar</button><button class="btn btn-ghost" data-act="backup">⬇️ Respaldo</button><button class="btn btn-ghost" data-act="restoreform">⬆️ Restaurar</button></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-primary" data-act="savesettings">💾 Guardar</button><button class="btn btn-ghost" data-act="backup">⬇️ Copia de seguridad</button></div>
   </div>`;
 }
 
+// Delivered services and income per worker in a date range (who did what).
+function byWorker(from, to) {
+  const rows = workers().map(w => {
+    const list = db.appts.filter(a => a.worker_id === w.id && a.date >= from && a.date <= to && a.status !== "cancelado");
+    const done = list.filter(a => a.status === "entregado");
+    return { w, total: list.length, done: done.length, money: done.reduce((s, a) => s + a.price, 0) };
+  });
+  if (!rows.length) return empty("👷", "Aún no hay trabajadores.");
+  return `<div class="list">${rows.map(x => `<div class="row"><div class="av">👷</div><div class="info"><b>${esc(x.w.name)}</b><small>${x.done} entregados de ${x.total} asignados</small></div>${isOwner() ? `<b class="money-in">${money(x.money)}</b>` : ""}</div>`).join("")}</div>`;
+}
+function viewEquipo() {
+  const t = today(), ms = t.slice(0, 8) + "01";
+  return header(`<button class="btn btn-primary" data-act="worker">➕ Agregar trabajador</button>`) + `
+  <div class="grid two">
+    <div class="card"><h3>👥 Personas con acceso</h3><div class="list">${db.staff.map(w => `<div class="row" style="${w.active ? "" : "opacity:.55"}"><div class="av">${w.role === "owner" ? "👑" : "👷"}</div><div class="info"><b>${esc(w.name)}</b><small>${esc(w.email)} · ${w.role === "owner" ? "Dueño" : "Trabajador"}${w.active ? "" : " · sin acceso"}${w.user_id ? "" : " · aún no crea su cuenta"}</small></div>${w.id === me.id ? "<span class=\"tag st-entregado\">Tú</span>" : `<div class="acts"><button class="btn btn-ghost btn-sm" data-act="worker" data-id="${w.id}">✏️ Editar</button></div>`}</div>`).join("")}</div></div>
+    <div class="card"><h3>🏆 Este mes por trabajador</h3>${byWorker(ms, t)}</div>
+  </div>`;
+}
+function workerForm(id) {
+  const w = db.staff.find(x => x.id === id) || { role: "worker", active: true };
+  openModal(id ? "✏️ Editar trabajador" : "➕ Agregar trabajador", "Con su correo podrá crear su cuenta y entrar al panel.",
+    `<label class="f">Nombre *<input id="wName" value="${esc(w.name)}"></label>
+     <label class="f">Correo *<input id="wEmail" type="email" value="${esc(w.email)}" ${w.user_id ? "readonly" : ""}></label>
+     <label class="f">Rol<select id="wRole"><option value="worker" ${w.role === "worker" ? "selected" : ""}>Trabajador: agenda, clientes y recordatorios</option><option value="owner" ${w.role === "owner" ? "selected" : ""}>Dueño: todo, incluidas finanzas</option></select></label>
+     <label class="f">Acceso<select id="wActive"><option value="1" ${w.active ? "selected" : ""}>Puede entrar</option><option value="0" ${w.active ? "" : "selected"}>Sin acceso</option></select></label>`,
+    `<button class="btn btn-ghost" data-act="close">Cancelar</button><button class="btn btn-primary" data-act="saveworker" data-id="${id || ""}">💾 Guardar</button>`);
+}
 function viewAyuda() {
   return header() + `<div class="grid two"><div class="card"><h3>🧭 ¿Cómo se usa?</h3><ol class="help-steps">
     <li><b>Agenda una cita</b> con el botón amarillo <b>«💧 Agendar servicio»</b> (siempre está abajo a la derecha).</li>
     <li>En <b>📅 Agenda</b>, cuando llegue el auto toca <b>«🫧 Empezar lavado»</b>, luego <b>«✨ Marcar listo»</b> y avísale por WhatsApp.</li>
     <li>Al entregarlo toca <b>«✅ Entregar y cobrar»</b>: el ingreso se suma solo a <b>💰 Finanzas</b>.</li>
     <li>Entra a <b>🔔 Recordatorios</b> cada mañana y avisa a quien ya le toca su siguiente lavado.</li>
-    <li>Registra tus gastos (shampoo, agua, sueldos) para ver tu ganancia real.</li>
-  </ol></div><div class="card"><h3>🔒 Tus datos</h3><p class="muted">La información se guarda en este navegador. Descarga un <b>respaldo</b> en 🧴 Servicios de vez en cuando, y úsalo para pasar tus datos a otro equipo.</p></div></div>`;
+    <li>Cada cita tiene un <b>👷 trabajador asignado</b>. Cámbialo desde la lista; si alguien toca «Empezar lavado» en una cita libre, queda asignada a esa persona.</li>
+    <li>El dueño registra los gastos y ve las ganancias en <b>💰 Finanzas</b>.</li>
+  </ol></div><div class="card"><h3>👥 Trabajo en equipo</h3><p class="muted">Todos ven lo mismo al instante: si alguien agenda o termina un lavado, aparece en las demás pantallas sin recargar. El dueño agrega trabajadores en <b>👷 Equipo</b>; cada uno entra con su propio correo y contraseña.</p></div></div>`;
 }
 
-const VIEWS = { inicio: viewInicio, agenda: viewAgenda, clientes: viewClientes, recordatorios: viewRecordatorios, finanzas: viewFinanzas, servicios: viewServicios, ayuda: viewAyuda };
+const VIEWS = { inicio: viewInicio, agenda: viewAgenda, clientes: viewClientes, recordatorios: viewRecordatorios, finanzas: viewFinanzas, servicios: viewServicios, equipo: viewEquipo, ayuda: viewAyuda };
 function render() {
+  if (!me) return;
+  if (page !== "ayuda" && !pages().some(p => p.id === page)) page = "inicio";
   renderNav();
   const v = document.getElementById("view");
   v.innerHTML = `<div class="page">${(VIEWS[page] || viewInicio)()}</div>`;
@@ -653,7 +716,7 @@ const val = id => document.getElementById(id)?.value.trim() ?? "";
 
 // Agendar: wizard en 3 pasos con un auto que avanza por el túnel de lavado
 let wiz;
-function wizard(pre = {}) { wiz = { step: 0, clientId: pre.c || null, serviceId: null, date: pre.d || today(), time: null }; if (wiz.clientId) wiz.step = 1; drawWizard(); }
+function wizard(pre = {}) { wiz = { step: 0, client_id: pre.c || null, service_id: null, date: pre.d || today(), time: null, worker_id: isOwner() ? "" : me.id }; if (wiz.client_id) wiz.step = 1; drawWizard(); }
 function drawWizard() {
   const steps = ["1 · Cliente", "2 · Servicio", "3 · Día y hora"];
   const tunnel = `<div class="tunnel" aria-hidden="true"><div class="steps">${steps.map((s, i) => `<span class="${i <= wiz.step ? "on" : ""}">${s}</span>`).join("")}</div><div class="car" style="transform:translateX(${wiz.step * 100}%)">🚙</div></div>`;
@@ -661,24 +724,26 @@ function drawWizard() {
   if (wiz.step === 0) {
     body = `<input class="search" id="wq" placeholder="🔎 Buscar cliente…" aria-label="Buscar cliente"><div class="pick" id="wclients">${wizClients("")}</div><div class="spacer"></div><button class="btn btn-ghost btn-sm" data-act="client" data-from="wiz">➕ Cliente nuevo</button>`;
   } else if (wiz.step === 1) {
-    body = `<p class="muted" style="margin-top:0">Cliente: <b>${esc(cli(wiz.clientId).name)}</b> · ${esc(cli(wiz.clientId).vehicle)}</p><div class="pick">${db.services.map(s => `<button type="button" data-act="wsvc" data-id="${s.id}" aria-pressed="${wiz.serviceId === s.id}"><span class="e">${s.icon}</span><b>${esc(s.name)}</b><small>${money(s.price)} · ${s.minutes} min</small></button>`).join("")}</div>`;
+    body = `<p class="muted" style="margin-top:0">Cliente: <b>${esc(cli(wiz.client_id).name)}</b> · ${esc(cli(wiz.client_id).vehicle)}</p><div class="pick">${db.services.map(s => `<button type="button" data-act="wsvc" data-id="${s.id}" aria-pressed="${wiz.service_id === s.id}"><span class="e">${s.icon}</span><b>${esc(s.name)}</b><small>${money(s.price)} · ${s.minutes} min</small></button>`).join("")}</div>`;
   } else {
-    const taken = db.appts.filter(a => a.date === wiz.date && a.status !== "cancelado").map(a => a.time);
+    // one car per worker at the same time: a slot is full when every active worker already has a car then
+    const cap = Math.max(1, workers().length), taken = db.appts.filter(a => a.date === wiz.date && a.status !== "cancelado").map(a => a.time).filter((t, _, all) => all.filter(x => x === t).length >= cap);
     const slots = []; for (let h = 8; h <= 18; h++) for (const m of ["00", "30"]) slots.push(`${pad(h)}:${m}`);
     const past = wiz.date === today() ? `${pad(new Date().getHours())}:${pad(new Date().getMinutes())}` : "";
-    body = `<label class="f">Día<input type="date" id="wdate" value="${wiz.date}" min="${today()}"></label><div class="f">Horario disponible <small>(tachados = ocupados)</small></div><div class="slots">${slots.map(s => `<button type="button" data-act="wslot" data-t="${s}" aria-pressed="${wiz.time === s}" ${taken.includes(s) || (past && s < past) ? "disabled" : ""}>${s}</button>`).join("")}</div>
-    <div class="spacer"></div><div class="row"><div class="av">${svc(wiz.serviceId).icon}</div><div class="info"><b>${esc(svc(wiz.serviceId).name)} para ${esc(cli(wiz.clientId).name)}</b><small>${fmtDate(wiz.date)}${wiz.time ? " a las " + wiz.time : " · elige una hora"}</small></div><b>${money(svc(wiz.serviceId).price)}</b></div>`;
+    body = `<label class="f">Día<input type="date" id="wdate" value="${wiz.date}" min="${today()}"></label><label class="f">Trabajador asignado<select id="wWorker"><option value="">Sin asignar por ahora</option>${workers().map(w => `<option value="${w.id}" ${w.id === wiz.worker_id ? "selected" : ""}>👷 ${esc(w.name)}</option>`).join("")}</select></label><div class="f">Horario disponible <small>(tachados = llenos)</small></div><div class="slots">${slots.map(s => `<button type="button" data-act="wslot" data-t="${s}" aria-pressed="${wiz.time === s}" ${taken.includes(s) || (past && s < past) ? "disabled" : ""}>${s}</button>`).join("")}</div>
+    <div class="spacer"></div><div class="row"><div class="av">${svc(wiz.service_id).icon}</div><div class="info"><b>${esc(svc(wiz.service_id).name)} para ${esc(cli(wiz.client_id).name)}</b><small>${fmtDate(wiz.date)}${wiz.time ? " a las " + wiz.time : " · elige una hora"}</small></div><b>${money(svc(wiz.service_id).price)}</b></div>`;
   }
-  const can = [wiz.clientId, wiz.serviceId, wiz.time][wiz.step];
+  const can = [wiz.client_id, wiz.service_id, wiz.time][wiz.step];
   openModal("🚗 Agendar servicio", "Sigue los 3 pasos. Puedes regresar cuando quieras.", tunnel + body,
     `<button class="btn btn-ghost" data-act="${wiz.step ? "wback" : "close"}">${wiz.step ? "◀ Atrás" : "Cancelar"}</button><button class="btn btn-primary" data-act="wnext" ${can ? "" : "disabled"} style="${can ? "" : "opacity:.5"}">${wiz.step < 2 ? "Siguiente ▶" : "💧 Confirmar cita"}</button>`);
   const wq = document.getElementById("wq"); if (wq) { wq.oninput = () => document.getElementById("wclients").innerHTML = wizClients(wq.value); }
+  const ww = document.getElementById("wWorker"); if (ww) ww.onchange = () => wiz.worker_id = ww.value;
   const wd = document.getElementById("wdate"); if (wd) wd.onchange = () => { if (wd.value) { wiz.date = wd.value; wiz.time = null; drawWizard(); } };
 }
 function wizClients(q) {
   q = q.toLowerCase();
   const r = db.clients.filter(c => (c.name + c.plate + c.vehicle).toLowerCase().includes(q));
-  return r.length ? r.map(c => `<button type="button" data-act="wcli" data-id="${c.id}" aria-pressed="${wiz.clientId === c.id}"><span class="e">🚘</span><b>${esc(c.name)}</b><small>${esc(c.vehicle)} · ${esc(c.plate)}</small></button>`).join("") : `<p class="muted">Sin resultados. Usa «Cliente nuevo».</p>`;
+  return r.length ? r.map(c => `<button type="button" data-act="wcli" data-id="${c.id}" aria-pressed="${wiz.client_id === c.id}"><span class="e">🚘</span><b>${esc(c.name)}</b><small>${esc(c.vehicle)} · ${esc(c.plate)}</small></button>`).join("") : `<p class="muted">Sin resultados. Usa «Cliente nuevo».</p>`;
 }
 
 function clientForm(id, from) {
@@ -691,11 +756,11 @@ function clientForm(id, from) {
     `${id ? `<button class="btn btn-danger" data-act="delclient" data-id="${id}">🗑️ Borrar</button>` : "<span></span>"}<button class="btn btn-primary" data-act="saveclient" data-id="${id || ""}" data-from="${from || ""}">💾 Guardar cliente</button>`);
 }
 function serviceForm(id) {
-  const s = db.services.find(x => x.id === id) || { icon: "🚿", minutes: 30, interval: 30 };
+  const s = db.services.find(x => x.id === id) || { icon: "🚿", minutes: 30, every_days: 30 };
   openModal(id ? "✏️ Editar servicio" : "➕ Nuevo servicio", "El intervalo define cuándo recordarle al cliente.",
     `<div class="cols"><label class="f">Nombre *<input id="sName" value="${esc(s.name)}"></label><label class="f">Ícono <small>(emoji)</small><input id="sIcon" value="${esc(s.icon)}" maxlength="4"></label>
      <label class="f">Precio *<input id="sPrice" type="number" min="0" inputmode="decimal" value="${s.price ?? ""}"></label><label class="f">Duración (min)<input id="sMin" type="number" min="5" value="${s.minutes}"></label></div>
-     <label class="f">Recordar cada (días)<input id="sInt" type="number" min="1" value="${s.interval}"></label>`,
+     <label class="f">Recordar cada (días)<input id="sInt" type="number" min="1" value="${s.every_days}"></label>`,
     `${id ? `<button class="btn btn-danger" data-act="delservice" data-id="${id}">🗑️ Borrar</button>` : "<span></span>"}<button class="btn btn-primary" data-act="saveservice" data-id="${id || ""}">💾 Guardar servicio</button>`);
 }
 function expenseForm() {
@@ -705,16 +770,16 @@ function expenseForm() {
      <label class="f">Categoría<select id="eCat">${EXP_CATS.map(c => `<option>${c}</option>`).join("")}</select></label>`,
     `<button class="btn btn-ghost" data-act="close">Cancelar</button><button class="btn btn-primary" data-act="saveexpense">💾 Guardar gasto</button>`);
 }
-function remindForm(clientId, kind) {
-  const c = cli(clientId), n = nextDue(clientId), sug = suggestion(clientId);
-  const text = fillTpl(TEMPLATES[kind], c, { servicio: n ? svc(n.last.serviceId).name.toLowerCase() : "lavado", fecha: n ? fmtDate(n.due) : "", sugerido: sug ? sug.name.toLowerCase() : "un encerado" });
+function remindForm(client_id, kind) {
+  const c = cli(client_id), n = nextDue(client_id), sug = suggestion(client_id);
+  const text = fillTpl(TEMPLATES[kind], c, { servicio: n ? svc(n.last.service_id).name.toLowerCase() : "lavado", fecha: n ? fmtDate(n.due) : "", sugerido: sug ? sug.name.toLowerCase() : "un encerado" });
   openModal("📲 Mensaje para " + esc(c.name.split(" ")[0]), "Revisa o edita el texto. Se abrirá WhatsApp con el mensaje listo.",
-    `<div class="tabs">${[["recordatorio", "🔔 Recordatorio"], ["sugerencia", "💡 Sugerencia"], ["lluvia", "🌧️ Temporada"]].map(([k, l]) => `<button type="button" aria-selected="${k === kind}" data-act="remind" data-id="${clientId}" data-k="${k}">${l}</button>`).join("")}</div>
+    `<div class="tabs">${[["recordatorio", "🔔 Recordatorio"], ["sugerencia", "💡 Sugerencia"], ["lluvia", "🌧️ Temporada"]].map(([k, l]) => `<button type="button" aria-selected="${k === kind}" data-act="remind" data-id="${client_id}" data-k="${k}">${l}</button>`).join("")}</div>
      <label class="f">Mensaje<textarea id="rText">${esc(text)}</textarea></label><p class="muted">Se enviará a 📞 ${esc(c.phone)}</p>`,
-    `<button class="btn btn-ghost" data-act="close">Cancelar</button><a class="btn btn-wa" target="_blank" rel="noopener" href="#" data-act="sendwa" data-id="${clientId}" data-k="${kind}">📲 Abrir WhatsApp</a>`);
+    `<button class="btn btn-ghost" data-act="close">Cancelar</button><a class="btn btn-wa" target="_blank" rel="noopener" href="#" data-act="sendwa" data-id="${client_id}" data-k="${kind}">📲 Abrir WhatsApp</a>`);
 }
 function historyView(id) {
-  const c = cli(id), h = db.appts.filter(a => a.clientId === id).sort((a, b) => b.date.localeCompare(a.date));
+  const c = cli(id), h = db.appts.filter(a => a.client_id === id).sort((a, b) => b.date.localeCompare(a.date));
   const total = h.filter(a => a.status === "entregado").reduce((s, a) => s + Number(a.price), 0);
   openModal("📜 " + esc(c.name), `${esc(c.vehicle)} · ${esc(c.plate)} · Ha gastado ${money(total)}`, `<div class="list">${h.length ? h.map(a => apptRow(a, { date: true })).join("") : empty("🧽", "Todavía sin servicios.")}</div>`,
     `<button class="btn btn-ghost" data-act="close">Cerrar</button><button class="btn btn-primary" data-act="new" data-c="${id}">🚗 Agendar</button>`);
@@ -731,17 +796,13 @@ function exportText(title, name, text, type) {
   modal.dataset.name = name; modal.dataset.type = type;
 }
 function download(name, text, type) { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); }
-function restore(e) {
-  const f = e.target.files[0]; if (!f) return;
-  f.text().then(restoreText);
-}
-function restoreText(t) {
-  let d; try { d = JSON.parse(t); } catch {}
-  if (!d || !d.services || !d.clients || !d.appts || !d.expenses) { sfx.error(); toast("⚠️ Eso no es un respaldo válido"); return; }
-  ask("Esto reemplazará los datos actuales por los del respaldo.", () => { db = { sent: [], ...d }; save(); render(); toast("✅ Datos restaurados"); });
-}
-
 /* ================= Acciones ================= */
+document.addEventListener("change", async e => {
+  const sel = e.target.closest("[data-assign]"); if (!sel) return;
+  const a = db.appts.find(x => x.id === sel.dataset.assign);
+  if (await put("appts", { ...a, worker_id: sel.value || null })) { sfx.pop(); toast(sel.value ? `👷 Asignado a ${staff(sel.value).name}` : "Quedó sin asignar"); }
+  modal.open ? historyView(a.client_id) : render();
+});
 document.addEventListener("click", e => {
   const el = e.target.closest("[data-go],[data-act]"); if (!el) return;
   if (el.dataset.go) { go(el.dataset.go); return; }
@@ -758,52 +819,68 @@ document.addEventListener("click", e => {
     day: () => { agendaDay = el.dataset.d; sfx.pop(); render(); },
     week: () => { agendaDay = addDays(agendaDay, Number(el.dataset.n)); sfx.pop(); render(); },
     today: () => { agendaDay = today(); render(); },
-    wcli: () => { wiz.clientId = id; wiz.step = 1; sfx.pop(); drawWizard(); },
-    wsvc: () => { wiz.serviceId = id; wiz.step = 2; sfx.pop(); drawWizard(); },
+    afilter: () => { agendaFilter = el.dataset.k; sfx.pop(); render(); },
+    mine: () => { agendaFilter = "mios"; agendaDay = today(); go("agenda"); },
+    logout: () => ask("¿Cerrar sesión en este equipo?", () => sb.auth.signOut()),
+    worker: () => workerForm(id),
+    saveworker: async () => {
+      const name = val("wName"), email = val("wEmail").toLowerCase();
+      if (!name || !/^\S+@\S+\.\S+$/.test(email)) { sfx.error(); toast("⚠️ Escribe nombre y un correo válido"); return; }
+      if (db.staff.some(w => w.email === email && w.id !== id)) { sfx.error(); toast("⚠️ Ese correo ya está en el equipo"); return; }
+      const old = db.staff.find(w => w.id === id) || {};
+      if (await put("staff", { ...old, id: id || uid(), name, email, role: val("wRole"), active: val("wActive") === "1" })) { burst(el); sfx.splash(); closeModal(); render(); toast("✅ Equipo actualizado"); }
+    },
+    wcli: () => { wiz.client_id = id; wiz.step = 1; sfx.pop(); drawWizard(); },
+    wsvc: () => { wiz.service_id = id; wiz.step = 2; sfx.pop(); drawWizard(); },
     wslot: () => { wiz.time = el.dataset.t; sfx.pop(); drawWizard(); },
     wback: () => { wiz.step--; drawWizard(); },
-    wnext: () => {
+    wnext: async () => {
       if (wiz.step < 2) { wiz.step++; drawWizard(); return; }
-      if (db.appts.some(a => a.date === wiz.date && a.time === wiz.time && a.status !== "cancelado")) { sfx.error(); toast("⚠️ Ese horario ya se ocupó"); return; }
-      db.appts.push({ id: uid(), clientId: wiz.clientId, serviceId: wiz.serviceId, date: wiz.date, time: wiz.time, status: "pendiente", price: svc(wiz.serviceId).price });
-      save(); burst(el); sfx.splash(); closeModal(); agendaDay = wiz.date; toast(`💧 Cita agendada: ${fmtDate(wiz.date)} ${wiz.time}`); render();
+      if (wiz.worker_id && db.appts.some(a => a.date === wiz.date && a.time === wiz.time && a.worker_id === wiz.worker_id && a.status !== "cancelado")) { sfx.error(); toast(`⚠️ ${staff(wiz.worker_id).name} ya tiene un auto a esa hora`); return; }
+      el.disabled = true;
+      if (!(await put("appts", { id: uid(), client_id: wiz.client_id, service_id: wiz.service_id, worker_id: wiz.worker_id || null, date: wiz.date, time: wiz.time, status: "pendiente", price: svc(wiz.service_id).price }))) { el.disabled = false; return; }
+      burst(el); sfx.splash(); closeModal(); agendaDay = wiz.date; toast(`💧 Cita agendada: ${fmtDate(wiz.date)} ${wiz.time}`); render();
     },
-    advance: () => {
-      const a = db.appts.find(x => x.id === id); a.status = STATUS[STATUS.indexOf(a.status) + 1]; save(); burst(el);
-      ({ lavando: sfx.splash, listo: sfx.bubbles, entregado: sfx.chime })[a.status]();
-      toast({ lavando: "🫧 ¡A lavar!", listo: "✨ Auto listo, avisa al cliente", entregado: `✅ Cobrado ${money(a.price)}` }[a.status]);
-      modal.open ? historyView(a.clientId) : render();
+    advance: async () => {
+      const a = db.appts.find(x => x.id === id), status = STATUS[STATUS.indexOf(a.status) + 1];
+      // whoever starts an unassigned wash takes it
+      el.disabled = true; if (!(await put("appts", { ...a, status, worker_id: a.worker_id || me.id }))) { el.disabled = false; return; }
+      burst(el);
+      ({ lavando: sfx.splash, listo: sfx.bubbles, entregado: sfx.chime })[status]();
+      toast({ lavando: "🫧 ¡A lavar!", listo: "✨ Auto listo, avisa al cliente", entregado: `✅ Cobrado ${money(a.price)}` }[status]);
+      modal.open ? historyView(a.client_id) : render();
     },
-    cancel: () => ask("¿Cancelar esta cita?", () => { db.appts.find(x => x.id === id).status = "cancelado"; save(); render(); toast("Cita cancelada"); }),
-    saveclient: () => {
+    cancel: () => ask("¿Cancelar esta cita?", async () => { if (await put("appts", { ...db.appts.find(x => x.id === id), status: "cancelado" })) { render(); toast("Cita cancelada"); } }),
+    saveclient: async () => {
       const name = val("cName"), phone = val("cPhone");
       if (!name || phone.replace(/\D/g, "").length < 7) { sfx.error(); toast("⚠️ Escribe nombre y un WhatsApp válido"); return; }
       const data = { name, phone, vehicle: val("cVeh"), plate: val("cPlate").toUpperCase(), notes: val("cNotes") };
-      let cid = id; if (id) Object.assign(db.clients.find(c => c.id === id), data); else { cid = uid(); db.clients.push({ id: cid, ...data }); }
-      save(); burst(el); sfx.splash(); toast("✅ Cliente guardado");
-      if (el.dataset.from === "wiz") { wiz.clientId = cid; wiz.step = 1; drawWizard(); render(); } else { closeModal(); render(); }
+      const cid = id || uid();
+      if (!(await put("clients", { ...db.clients.find(c => c.id === id), id: cid, ...data }))) return;
+      burst(el); sfx.splash(); toast("✅ Cliente guardado");
+      if (el.dataset.from === "wiz") { wiz.client_id = cid; wiz.step = 1; drawWizard(); render(); } else { closeModal(); render(); }
     },
     delclient: () => {
-      ask("¿Borrar este cliente y su historial? No se puede deshacer.", () => { db.clients = db.clients.filter(c => c.id !== id); db.appts = db.appts.filter(a => a.clientId !== id); save(); render(); toast("Cliente borrado"); });
+      ask("¿Borrar este cliente y su historial? No se puede deshacer.", async () => { if (await del("clients", id)) { db.appts = db.appts.filter(a => a.client_id !== id); db.sent = db.sent.filter(x => x.client_id !== id); render(); toast("Cliente borrado"); } });
     },
-    saveservice: () => {
+    saveservice: async () => {
       const price = Number(val("sPrice")); if (!val("sName") || !(price >= 0) || val("sPrice") === "") { sfx.error(); toast("⚠️ Falta nombre o precio"); return; }
-      const data = { name: val("sName"), icon: val("sIcon") || "🚿", price, minutes: Number(val("sMin")) || 30, interval: Math.max(1, Number(val("sInt")) || 30) };
-      if (id) Object.assign(db.services.find(s => s.id === id), data); else db.services.push({ id: uid(), ...data });
-      save(); burst(el); sfx.splash(); closeModal(); render(); toast("✅ Servicio guardado");
+      const data = { name: val("sName"), icon: val("sIcon") || "🚿", price, minutes: Number(val("sMin")) || 30, every_days: Math.max(1, Number(val("sInt")) || 30) };
+      if (!(await put("services", { id: id || uid(), ...data }))) return;
+      burst(el); sfx.splash(); closeModal(); render(); toast("✅ Servicio guardado");
     },
     delservice: () => {
-      if (db.appts.some(a => a.serviceId === id)) { sfx.error(); toast("⚠️ Tiene citas registradas; edítalo en vez de borrarlo"); return; }
-      ask("¿Borrar este servicio?", () => { db.services = db.services.filter(s => s.id !== id); save(); render(); });
+      if (db.appts.some(a => a.service_id === id)) { sfx.error(); toast("⚠️ Tiene citas registradas; edítalo en vez de borrarlo"); return; }
+      ask("¿Borrar este servicio?", async () => { if (await del("services", id)) render(); });
     },
-    saveexpense: () => {
+    saveexpense: async () => {
       const amount = Number(val("eAmt")); if (!val("eCon") || !(amount > 0)) { sfx.error(); toast("⚠️ Escribe concepto y monto"); return; }
-      db.expenses.push({ id: uid(), date: val("eDate") || today(), concept: val("eCon"), category: val("eCat"), amount }); save(); burst(el); sfx.splash(); closeModal(); render(); toast(`🧾 Gasto de ${money(amount)} registrado`);
+      if (!(await put("expenses", { id: uid(), date: val("eDate") || today(), concept: val("eCon"), category: val("eCat"), amount }))) return; burst(el); sfx.splash(); closeModal(); render(); toast(`🧾 Gasto de ${money(amount)} registrado`);
     },
-    delexp: () => ask("¿Borrar este gasto?", () => { db.expenses = db.expenses.filter(x => x.id !== id); save(); render(); }),
+    delexp: () => ask("¿Borrar este gasto?", async () => { if (await del("expenses", id)) render(); }),
     sendwa: () => {
       const c = cli(id); el.href = waLink(c.phone, val("rText"));
-      db.sent.push({ id: uid(), clientId: id, date: today(), type: el.dataset.k }); save(); sfx.chime(); toast("📲 Abriendo WhatsApp…");
+      put("sent", { id: uid(), client_id: id, date: today(), type: el.dataset.k }); sfx.chime(); toast("📲 Abriendo WhatsApp…");
       setTimeout(() => { closeModal(); render(); }); // the link must stay in the page until the browser follows it
     },
     broadcast: () => {
@@ -812,37 +889,77 @@ document.addEventListener("click", e => {
         `<label class="f">Mensaje <small>({nombre} y {vehiculo} se cambian solos)</small><textarea id="bText">${esc(TEMPLATES.lluvia)}</textarea></label><div class="list">${list.map(c => `<div class="row"><div class="info"><b>${esc(c.name)}</b><small>${esc(c.vehicle)}</small></div><a class="btn btn-wa btn-sm" target="_blank" rel="noopener" href="#" data-act="bsend" data-id="${c.id}">📲 Enviar</a></div>`).join("")}</div>`,
         `<button class="btn btn-ghost" data-act="close">Listo</button><span></span>`);
     },
-    bsend: () => { const c = cli(id); el.href = waLink(c.phone, fillTpl(val("bText"), c)); db.sent.push({ id: uid(), clientId: id, date: today(), type: "temporada" }); save(); el.textContent = "✓ Enviado"; sfx.pop(); },
-    cleardemo: () => ask("¿Borrar todos los datos de ejemplo? Se conservan tus servicios.", () => { db = { ...db, clients: [], appts: [], expenses: [], sent: [], settings: { ...db.settings, demo: false } }; save(); render(); toast("🧽 Listo, panel limpio"); }),
-    savesettings: () => { const cur = val("setCur").toUpperCase(); try { new Intl.NumberFormat("es", { style: "currency", currency: cur }); } catch { sfx.error(); toast("⚠️ Código de moneda no válido"); return; } db.settings = { ...db.settings, name: val("setName") || "Autolavado", currency: cur, cc: val("setCC").replace(/\D/g, "") }; save(); burst(el); sfx.splash(); render(); toast("✅ Datos guardados"); },
-    backup: () => exportText("⬇️ Respaldo de tus datos", `respaldo-autolavado-${today()}.json`, JSON.stringify(db), "application/json"),
-    restoreform: () => {
-      openModal("⬆️ Restaurar respaldo", "Elige el archivo de respaldo o pega el texto que copiaste.", `<label class="f">Archivo<input type="file" id="restoreFile" accept="application/json,.json"></label><label class="f">…o pega el respaldo aquí<textarea id="restorePaste"></textarea></label>`,
-        `<button class="btn btn-ghost" data-act="close">Cancelar</button><button class="btn btn-primary" data-act="restorego">⬆️ Restaurar</button>`);
-      document.getElementById("restoreFile").onchange = restore;
-    },
-    restorego: () => restoreText(val("restorePaste")),
+    bsend: () => { const c = cli(id); el.href = waLink(c.phone, fillTpl(val("bText"), c)); put("sent", { id: uid(), client_id: id, date: today(), type: "temporada" }); el.textContent = "✓ Enviado"; sfx.pop(); },
+    savesettings: async () => { const cur = val("setCur").toUpperCase(); try { new Intl.NumberFormat("es", { style: "currency", currency: cur }); } catch { sfx.error(); toast("⚠️ Código de moneda no válido"); return; } if (!(await put("settings", { id: 1, name: val("setName") || "Autolavado", currency: cur, cc: val("setCC").replace(/\D/g, "") }))) return; burst(el); sfx.splash(); render(); toast("✅ Datos guardados"); },
+    backup: () => exportText("⬇️ Copia de seguridad", `respaldo-autolavado-${today()}.json`, JSON.stringify(db), "application/json"),
     dl: () => download(modal.dataset.name, document.getElementById("exText").value, modal.dataset.type), // not val(): trim() would drop the BOM Excel needs
     copyex: () => { const t = document.getElementById("exText"); navigator.clipboard.writeText(t.value).then(() => toast("📋 Copiado"), () => { t.select(); toast("Texto seleccionado: cópialo con Ctrl+C o mantén presionado"); }); },
     csv: () => {
-      const rows = [["fecha", "tipo", "concepto", "monto"], ...db.appts.filter(a => a.status === "entregado").map(a => [a.date, "ingreso", `${svc(a.serviceId).name} - ${cli(a.clientId).name}`, a.price]), ...db.expenses.map(x => [x.date, "gasto", `${x.concept} (${x.category})`, -x.amount])];
+      const rows = [["fecha", "tipo", "concepto", "monto"], ...db.appts.filter(a => a.status === "entregado").map(a => [a.date, "ingreso", `${svc(a.service_id).name} - ${cli(a.client_id).name}`, a.price]), ...db.expenses.map(x => [x.date, "gasto", `${x.concept} (${x.category})`, -x.amount])];
       exportText("⬇️ Finanzas (CSV para Excel)", `finanzas-${today()}.csv`, "﻿" + rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n"), "text/csv");
     },
   };
   if (A[act]) { if (!["advance", "wnext", "saveclient", "saveservice", "saveexpense", "sendwa", "savesettings", "remtab", "day", "week", "wcli", "wsvc", "wslot", "bsend"].includes(act)) sfx.pop(); A[act](); }
 });
-const toggleSound = () => { db.settings.sound = !db.settings.sound; save(); renderNav(); sfx.bubbles(); };
+const toggleSound = () => { sound = !sound; try { localStorage.setItem("autolavado.sound", sound ? "1" : "0"); } catch {} renderNav(); sfx.bubbles(); };
 document.getElementById("soundBtn").onclick = toggleSound;
 document.getElementById("soundBtnM").onclick = toggleSound;
 document.getElementById("fab").onclick = e => { sfx.bubbles(); burst(e.currentTarget); wizard({ d: page === "agenda" ? agendaDay : undefined }); };
 addEventListener("hashchange", () => { const h = location.hash.slice(1); if (VIEWS[h] && h !== page) { page = h; render(); } });
 if (VIEWS[location.hash.slice(1)]) page = location.hash.slice(1);
-render();
+
+/* ================= Acceso ================= */
+const authEl = document.getElementById("auth"), authMsg = m => document.getElementById("authMsg").textContent = m;
+async function start() {
+  const { data, error } = await sb.rpc("whoami");
+  if (error || !data?.id) {
+    document.getElementById("authForm").hidden = true; document.getElementById("authOut").hidden = false;
+    authMsg(error ? "No se pudo conectar. Revisa tu internet y recarga la página." : "Tu correo aún no tiene acceso. Pídele al dueño que te agregue en «👷 Equipo» con este mismo correo.");
+    return;
+  }
+  me = data;
+  try { await loadAll(); } catch (err) { console.error(err); authMsg("No se pudieron cargar los datos. Recarga la página."); return; }
+  authEl.hidden = true; live(); render();
+  toast(`👋 Hola, ${me.name}`);
+}
+document.getElementById("authForm").onsubmit = async e => {
+  e.preventDefault(); const btn = document.getElementById("aLogin"); btn.disabled = true;
+  const { error } = await sb.auth.signInWithPassword({ email: val("aEmail"), password: document.getElementById("aPass").value });
+  btn.disabled = false;
+  if (error) { sfx.error(); authMsg(error.message.includes("confirm") ? "Primero confirma tu correo: te enviamos un enlace." : "Correo o contraseña incorrectos."); return; }
+  start();
+};
+document.getElementById("aSignup").onclick = async () => {
+  const email = val("aEmail"), password = document.getElementById("aPass").value;
+  if (!email || password.length < 6) { authMsg("Escribe tu correo y una contraseña de al menos 6 caracteres."); return; }
+  const { data, error } = await sb.auth.signUp({ email, password, options: { emailRedirectTo: location.origin + location.pathname } });
+  if (error) { sfx.error(); authMsg(error.message.includes("registered") ? "Ese correo ya tiene cuenta. Usa «Entrar»." : "No se pudo crear la cuenta: " + error.message); return; }
+  if (data.session) start(); else authMsg("✅ Cuenta creada. Abre el enlace que te enviamos por correo y después entra aquí.");
+};
+document.getElementById("aForgot").onclick = async () => {
+  const email = val("aEmail"); if (!email) { authMsg("Escribe tu correo arriba y vuelve a tocar «Olvidé mi contraseña»."); return; }
+  await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+  authMsg("📧 Si el correo existe, te llegó un enlace para crear una contraseña nueva.");
+};
+document.getElementById("aLogout").onclick = () => sb.auth.signOut();
+sb.auth.onAuthStateChange((ev, session) => {
+  if (ev === "SIGNED_OUT") location.reload();
+  if (ev === "PASSWORD_RECOVERY") {
+    openModal("🔑 Nueva contraseña", "Escribe tu nueva contraseña.", `<label class="f">Contraseña nueva<input id="newPass" type="password" minlength="6" autocomplete="new-password"></label>`,
+      `<span></span><button class="btn btn-primary" id="savePass">💾 Guardar</button>`);
+    document.getElementById("savePass").onclick = async () => {
+      const { error } = await sb.auth.updateUser({ password: document.getElementById("newPass").value });
+      if (error) { sfx.error(); toast("⚠️ Debe tener al menos 6 caracteres"); return; }
+      closeModal(); toast("✅ Contraseña actualizada"); start();
+    };
+  }
+});
+sb.auth.getSession().then(({ data }) => { if (data.session) start(); });
 
 /* Autoprueba de la lógica clave: abre la página con ?test y revisa la consola */
 if (location.search.includes("test")) {
-  const T = "2026-01-01", ap = [{ clientId: "x", serviceId: "s1", date: T, status: "entregado", price: 100 }, { clientId: "x", serviceId: "s1", date: "2026-01-05", status: "cancelado", price: 999 }];
-  console.assert(nextDue("x", ap).due === addDays(T, svc("s1").interval), "nextDue usa el último entregado + intervalo");
+  const T = "2026-01-01", ap = [{ client_id: "x", service_id: "s1", date: T, status: "entregado", price: 100 }, { client_id: "x", service_id: "s1", date: "2026-01-05", status: "cancelado", price: 999 }];
+  console.assert(nextDue("x", ap).due === addDays(T, svc("s1").every_days), "nextDue usa el último entregado + intervalo");
   console.assert(income("2026-01-01", "2026-01-31", ap) === 100, "ingresos ignoran citas canceladas");
   console.assert(spend("2026-01-01", "2026-01-31", [{ date: "2026-01-10", amount: "50" }, { date: "2026-02-01", amount: 9 }]) === 50, "gastos por rango");
   console.assert(addDays("2026-02-28", 1) === "2026-03-01" && diffDays("2026-03-01", "2026-02-28") === 1, "fechas");
