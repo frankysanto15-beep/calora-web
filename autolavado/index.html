@@ -618,7 +618,7 @@ function viewServicios() {
     <div class="cols"><label class="f">Nombre del autolavado<input id="setName" value="${esc(db.settings.name)}"></label>
     <label class="f">Moneda <small>(código, ej. MXN, USD, PEN, COP)</small><input id="setCur" value="${esc(db.settings.currency)}" maxlength="3"></label>
     <label class="f">Código de país para WhatsApp <small>(ej. 52 México, 51 Perú, 57 Colombia)</small><input id="setCC" inputmode="numeric" value="${esc(db.settings.cc)}"></label></div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-primary" data-act="savesettings">💾 Guardar</button><button class="btn btn-ghost" data-act="backup">⬇️ Respaldo</button><label class="btn btn-ghost">⬆️ Restaurar<input type="file" id="restore" accept="application/json" hidden></label></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-primary" data-act="savesettings">💾 Guardar</button><button class="btn btn-ghost" data-act="backup">⬇️ Respaldo</button><button class="btn btn-ghost" data-act="restoreform">⬆️ Restaurar</button></div>
   </div>`;
 }
 
@@ -638,8 +638,7 @@ function render() {
   const v = document.getElementById("view");
   v.innerHTML = `<div class="page">${(VIEWS[page] || viewInicio)()}</div>`;
   const q = document.getElementById("q"); if (q) q.oninput = () => document.getElementById("clist").innerHTML = clientRows(q.value);
-  const r = document.getElementById("restore"); if (r) r.onchange = restore;
-}
+  }
 
 /* ================= Modales ================= */
 const modal = document.getElementById("modal");
@@ -712,7 +711,7 @@ function remindForm(clientId, kind) {
   openModal("📲 Mensaje para " + esc(c.name.split(" ")[0]), "Revisa o edita el texto. Se abrirá WhatsApp con el mensaje listo.",
     `<div class="tabs">${[["recordatorio", "🔔 Recordatorio"], ["sugerencia", "💡 Sugerencia"], ["lluvia", "🌧️ Temporada"]].map(([k, l]) => `<button type="button" aria-selected="${k === kind}" data-act="remind" data-id="${clientId}" data-k="${k}">${l}</button>`).join("")}</div>
      <label class="f">Mensaje<textarea id="rText">${esc(text)}</textarea></label><p class="muted">Se enviará a 📞 ${esc(c.phone)}</p>`,
-    `<button class="btn btn-ghost" data-act="close">Cancelar</button><button class="btn btn-wa" data-act="sendwa" data-id="${clientId}" data-k="${kind}">📲 Abrir WhatsApp</button>`);
+    `<button class="btn btn-ghost" data-act="close">Cancelar</button><a class="btn btn-wa" target="_blank" rel="noopener" href="#" data-act="sendwa" data-id="${clientId}" data-k="${kind}">📲 Abrir WhatsApp</a>`);
 }
 function historyView(id) {
   const c = cli(id), h = db.appts.filter(a => a.clientId === id).sort((a, b) => b.date.localeCompare(a.date));
@@ -721,11 +720,25 @@ function historyView(id) {
     `<button class="btn btn-ghost" data-act="close">Cerrar</button><button class="btn btn-primary" data-act="new" data-c="${id}">🚗 Agendar</button>`);
 }
 
+function ask(msg, yes) {
+  openModal("¿Seguro?", esc(msg), "", `<button class="btn btn-ghost" data-act="close">No, volver</button><button class="btn btn-danger" id="askYes">Sí, continuar</button>`);
+  document.getElementById("askYes").onclick = () => { closeModal(); yes(); };
+}
+// Shows the text to copy too, because the shared-link viewer blocks file downloads.
+function exportText(title, name, text, type) {
+  openModal(title, "Toca «Copiar» y pégalo en un correo, nota o Excel para guardarlo.", `<label class="f">Contenido<textarea id="exText" readonly>${esc(text)}</textarea></label>`,
+    `<button class="btn btn-ghost" data-act="dl">⬇️ Descargar archivo</button><button class="btn btn-primary" data-act="copyex">📋 Copiar</button>`);
+  modal.dataset.name = name; modal.dataset.type = type;
+}
 function download(name, text, type) { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); }
 function restore(e) {
   const f = e.target.files[0]; if (!f) return;
-  f.text().then(t => { const d = JSON.parse(t); if (!d.services || !d.clients || !d.appts || !d.expenses) throw 0; if (!confirm("Esto reemplazará los datos actuales. ¿Continuar?")) return; db = { sent: [], ...d }; save(); render(); toast("✅ Datos restaurados"); })
-    .catch(() => { sfx.error(); toast("⚠️ El archivo no es un respaldo válido"); });
+  f.text().then(restoreText);
+}
+function restoreText(t) {
+  let d; try { d = JSON.parse(t); } catch {}
+  if (!d || !d.services || !d.clients || !d.appts || !d.expenses) { sfx.error(); toast("⚠️ Eso no es un respaldo válido"); return; }
+  ask("Esto reemplazará los datos actuales por los del respaldo.", () => { db = { sent: [], ...d }; save(); render(); toast("✅ Datos restaurados"); });
 }
 
 /* ================= Acciones ================= */
@@ -761,7 +774,7 @@ document.addEventListener("click", e => {
       toast({ lavando: "🫧 ¡A lavar!", listo: "✨ Auto listo, avisa al cliente", entregado: `✅ Cobrado ${money(a.price)}` }[a.status]);
       modal.open ? historyView(a.clientId) : render();
     },
-    cancel: () => { if (!confirm("¿Cancelar esta cita?")) return; db.appts.find(x => x.id === id).status = "cancelado"; save(); render(); toast("Cita cancelada"); },
+    cancel: () => ask("¿Cancelar esta cita?", () => { db.appts.find(x => x.id === id).status = "cancelado"; save(); render(); toast("Cita cancelada"); }),
     saveclient: () => {
       const name = val("cName"), phone = val("cPhone");
       if (!name || phone.replace(/\D/g, "").length < 7) { sfx.error(); toast("⚠️ Escribe nombre y un WhatsApp válido"); return; }
@@ -771,8 +784,7 @@ document.addEventListener("click", e => {
       if (el.dataset.from === "wiz") { wiz.clientId = cid; wiz.step = 1; drawWizard(); render(); } else { closeModal(); render(); }
     },
     delclient: () => {
-      if (!confirm("¿Borrar este cliente y su historial? No se puede deshacer.")) return;
-      db.clients = db.clients.filter(c => c.id !== id); db.appts = db.appts.filter(a => a.clientId !== id); save(); closeModal(); render(); toast("Cliente borrado");
+      ask("¿Borrar este cliente y su historial? No se puede deshacer.", () => { db.clients = db.clients.filter(c => c.id !== id); db.appts = db.appts.filter(a => a.clientId !== id); save(); render(); toast("Cliente borrado"); });
     },
     saveservice: () => {
       const price = Number(val("sPrice")); if (!val("sName") || !(price >= 0) || val("sPrice") === "") { sfx.error(); toast("⚠️ Falta nombre o precio"); return; }
@@ -782,30 +794,39 @@ document.addEventListener("click", e => {
     },
     delservice: () => {
       if (db.appts.some(a => a.serviceId === id)) { sfx.error(); toast("⚠️ Tiene citas registradas; edítalo en vez de borrarlo"); return; }
-      if (!confirm("¿Borrar este servicio?")) return; db.services = db.services.filter(s => s.id !== id); save(); closeModal(); render();
+      ask("¿Borrar este servicio?", () => { db.services = db.services.filter(s => s.id !== id); save(); render(); });
     },
     saveexpense: () => {
       const amount = Number(val("eAmt")); if (!val("eCon") || !(amount > 0)) { sfx.error(); toast("⚠️ Escribe concepto y monto"); return; }
       db.expenses.push({ id: uid(), date: val("eDate") || today(), concept: val("eCon"), category: val("eCat"), amount }); save(); burst(el); sfx.splash(); closeModal(); render(); toast(`🧾 Gasto de ${money(amount)} registrado`);
     },
-    delexp: () => { if (!confirm("¿Borrar este gasto?")) return; db.expenses = db.expenses.filter(x => x.id !== id); save(); render(); },
+    delexp: () => ask("¿Borrar este gasto?", () => { db.expenses = db.expenses.filter(x => x.id !== id); save(); render(); }),
     sendwa: () => {
-      const c = cli(id); window.open(waLink(c.phone, val("rText")), "_blank", "noopener");
-      db.sent.push({ id: uid(), clientId: id, date: today(), type: el.dataset.k }); save(); sfx.chime(); closeModal(); render(); toast("📲 WhatsApp abierto");
+      const c = cli(id); el.href = waLink(c.phone, val("rText"));
+      db.sent.push({ id: uid(), clientId: id, date: today(), type: el.dataset.k }); save(); sfx.chime(); toast("📲 Abriendo WhatsApp…");
+      setTimeout(() => { closeModal(); render(); }); // the link must stay in the page until the browser follows it
     },
     broadcast: () => {
       const list = db.clients.filter(c => c.phone);
       openModal("🌧️ Mensaje de temporada", "Edita el mensaje y envíalo uno por uno (WhatsApp no permite envío masivo desde la web).",
-        `<label class="f">Mensaje <small>({nombre} y {vehiculo} se cambian solos)</small><textarea id="bText">${esc(TEMPLATES.lluvia)}</textarea></label><div class="list">${list.map(c => `<div class="row"><div class="info"><b>${esc(c.name)}</b><small>${esc(c.vehicle)}</small></div><button class="btn btn-wa btn-sm" data-act="bsend" data-id="${c.id}">📲 Enviar</button></div>`).join("")}</div>`,
+        `<label class="f">Mensaje <small>({nombre} y {vehiculo} se cambian solos)</small><textarea id="bText">${esc(TEMPLATES.lluvia)}</textarea></label><div class="list">${list.map(c => `<div class="row"><div class="info"><b>${esc(c.name)}</b><small>${esc(c.vehicle)}</small></div><a class="btn btn-wa btn-sm" target="_blank" rel="noopener" href="#" data-act="bsend" data-id="${c.id}">📲 Enviar</a></div>`).join("")}</div>`,
         `<button class="btn btn-ghost" data-act="close">Listo</button><span></span>`);
     },
-    bsend: () => { const c = cli(id); window.open(waLink(c.phone, fillTpl(val("bText"), c)), "_blank", "noopener"); db.sent.push({ id: uid(), clientId: id, date: today(), type: "temporada" }); save(); el.textContent = "✓ Enviado"; el.disabled = true; sfx.pop(); },
-    cleardemo: () => { if (!confirm("¿Borrar todos los datos de ejemplo? Se conservan tus servicios.")) return; db = { ...db, clients: [], appts: [], expenses: [], sent: [], settings: { ...db.settings, demo: false } }; save(); render(); toast("🧽 Listo, panel limpio"); },
+    bsend: () => { const c = cli(id); el.href = waLink(c.phone, fillTpl(val("bText"), c)); db.sent.push({ id: uid(), clientId: id, date: today(), type: "temporada" }); save(); el.textContent = "✓ Enviado"; sfx.pop(); },
+    cleardemo: () => ask("¿Borrar todos los datos de ejemplo? Se conservan tus servicios.", () => { db = { ...db, clients: [], appts: [], expenses: [], sent: [], settings: { ...db.settings, demo: false } }; save(); render(); toast("🧽 Listo, panel limpio"); }),
     savesettings: () => { const cur = val("setCur").toUpperCase(); try { new Intl.NumberFormat("es", { style: "currency", currency: cur }); } catch { sfx.error(); toast("⚠️ Código de moneda no válido"); return; } db.settings = { ...db.settings, name: val("setName") || "Autolavado", currency: cur, cc: val("setCC").replace(/\D/g, "") }; save(); burst(el); sfx.splash(); render(); toast("✅ Datos guardados"); },
-    backup: () => download(`respaldo-autolavado-${today()}.json`, JSON.stringify(db, null, 2), "application/json"),
+    backup: () => exportText("⬇️ Respaldo de tus datos", `respaldo-autolavado-${today()}.json`, JSON.stringify(db), "application/json"),
+    restoreform: () => {
+      openModal("⬆️ Restaurar respaldo", "Elige el archivo de respaldo o pega el texto que copiaste.", `<label class="f">Archivo<input type="file" id="restoreFile" accept="application/json,.json"></label><label class="f">…o pega el respaldo aquí<textarea id="restorePaste"></textarea></label>`,
+        `<button class="btn btn-ghost" data-act="close">Cancelar</button><button class="btn btn-primary" data-act="restorego">⬆️ Restaurar</button>`);
+      document.getElementById("restoreFile").onchange = restore;
+    },
+    restorego: () => restoreText(val("restorePaste")),
+    dl: () => download(modal.dataset.name, document.getElementById("exText").value, modal.dataset.type), // not val(): trim() would drop the BOM Excel needs
+    copyex: () => { const t = document.getElementById("exText"); navigator.clipboard.writeText(t.value).then(() => toast("📋 Copiado"), () => { t.select(); toast("Texto seleccionado: cópialo con Ctrl+C o mantén presionado"); }); },
     csv: () => {
       const rows = [["fecha", "tipo", "concepto", "monto"], ...db.appts.filter(a => a.status === "entregado").map(a => [a.date, "ingreso", `${svc(a.serviceId).name} - ${cli(a.clientId).name}`, a.price]), ...db.expenses.map(x => [x.date, "gasto", `${x.concept} (${x.category})`, -x.amount])];
-      download(`finanzas-${today()}.csv`, "﻿" + rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n"), "text/csv");
+      exportText("⬇️ Finanzas (CSV para Excel)", `finanzas-${today()}.csv`, "﻿" + rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n"), "text/csv");
     },
   };
   if (A[act]) { if (!["advance", "wnext", "saveclient", "saveservice", "saveexpense", "sendwa", "savesettings", "remtab", "day", "week", "wcli", "wsvc", "wslot", "bsend"].includes(act)) sfx.pop(); A[act](); }
