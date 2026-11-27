@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Lucho Car Wash</title>
 <link rel="icon" href="logo.jpg">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#121317">
+<link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800&display=swap">
@@ -286,7 +289,7 @@ label.f small { font-weight: 600; color: var(--ink-soft); }
 
 <div class="app">
   <aside class="side">
-    <div class="logo"><span data-logo></span><div><b data-bizname>Autolavado</b><small>Panel de gestión ★★★★★</small></div></div>
+    <div class="logo"><span data-logo></span><div><b data-bizname>Autolavado</b><small>Panel de gestión ★★★★★</small></div><button class="btn btn-accent btn-sm" type="button" data-install hidden>📲 Instalar app</button></div>
     <nav class="nav" id="nav" aria-label="Menú principal"></nav>
     <div class="side-foot">
       <button class="chip-btn me-chip" type="button" data-act="logout" id="meChip" title="Cerrar sesión"></button>
@@ -300,7 +303,7 @@ label.f small { font-weight: 600; color: var(--ink-soft); }
   </aside>
 
   <main class="main" id="main">
-    <div class="mobile-head"><span data-logo></span><b data-bizname>Autolavado</b><button class="btn btn-ghost btn-sm" type="button" data-go="ayuda" aria-label="Ayuda">❓</button><button class="btn btn-ghost btn-sm" id="soundBtnM" type="button"></button></div>
+    <div class="mobile-head"><span data-logo></span><b data-bizname>Autolavado</b><button class="btn btn-accent btn-sm" type="button" data-install hidden>📲 Instalar</button><button class="btn btn-ghost btn-sm" type="button" data-go="ayuda" aria-label="Ayuda">❓</button><button class="btn btn-ghost btn-sm" id="soundBtnM" type="button"></button></div>
     <div id="view"></div>
   </main>
 </div>
@@ -315,7 +318,7 @@ label.f small { font-weight: 600; color: var(--ink-soft); }
     <form id="authForm">
       <label class="f">Correo<input id="aEmail" type="email" autocomplete="email" required></label>
       <label class="f">Contraseña <small>(mínimo 6 caracteres)</small><input id="aPass" type="password" autocomplete="current-password" minlength="6" required></label>
-      <div class="btns"><button class="btn btn-primary" type="submit" id="aLogin">Entrar</button><button class="btn btn-ghost" type="button" id="aSignup">Crear mi cuenta</button><button class="linkbtn" type="button" id="aForgot">Olvidé mi contraseña</button></div>
+      <div class="btns"><button class="btn btn-accent" type="button" data-install hidden>📲 Instalar como app en este celular</button><button class="btn btn-primary" type="submit" id="aLogin">Entrar</button><button class="btn btn-ghost" type="button" id="aSignup">Crear mi cuenta</button><button class="linkbtn" type="button" id="aForgot">Olvidé mi contraseña</button></div>
     </form>
     <div id="authOut" hidden><div class="spacer"></div><button class="btn btn-ghost" type="button" id="aLogout">Salir y usar otro correo</button></div>
   </div>
@@ -959,6 +962,13 @@ sb.auth.onAuthStateChange((ev, session) => {
     };
   }
 });
+/* ================= App instalable ================= */
+if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
+let installEvt = null;
+const installBtns = () => document.querySelectorAll("[data-install]");
+addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvt = e; installBtns().forEach(b => b.hidden = false); });
+addEventListener("appinstalled", () => { installEvt = null; installBtns().forEach(b => b.hidden = true); toast("✅ App instalada: búscala en tu pantalla de inicio"); });
+installBtns().forEach(b => b.onclick = async () => { if (!installEvt) return; installEvt.prompt(); await installEvt.userChoice; installEvt = null; installBtns().forEach(x => x.hidden = true); });
 sb.auth.getSession().then(({ data }) => { if (data.session) start(); });
 
 /* Autoprueba de la lógica clave: abre la página con ?test y revisa la consola */
