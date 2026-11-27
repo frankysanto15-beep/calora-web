@@ -263,7 +263,7 @@ def frame(f):
 
 # ---------- sonido: electro de 140 bpm estilo juego de ritmo (composición original) ----------
 SR = 44100
-def music(path):
+def music(path, clicks=(460, 800)):
     n = int(SR * N / FPS); t = np.arange(n) / SR
     beat = 60 / BPM; bar = 4 * beat
     def mtof(m): return 440 * 2 ** ((m - 69) / 12)
@@ -335,7 +335,7 @@ def music(path):
         if L > 0: drums[j0:j0 + L] += rng.standard_normal(L) * np.exp(-np.arange(L) / SR * 60) * 0.12 * (0.3 + 0.7 * k / 64)
     rise = (t >= 6 * bar) & (t < DROP)
     riser = np.diff(rng.standard_normal(n + 1)) * np.clip((t - 6 * bar) / (2 * bar), 0, 1) ** 2 * 0.1 * rise
-    for fsn in (460, 800):  # chasquido del contacto
+    for fsn in clicks:  # chasquido del contacto
         i0 = int(fsn / FPS * SR); L = int(0.06 * SR); tt = np.arange(L) / SR
         drums[i0:i0 + L] += rng.standard_normal(L) * np.exp(-tt * 120) * 0.5 + np.sin(2 * np.pi * 2400 * tt) * np.exp(-tt * 80) * 0.25
     for k, m in enumerate([84, 87, 91, 96]):  # campanilla del logo
